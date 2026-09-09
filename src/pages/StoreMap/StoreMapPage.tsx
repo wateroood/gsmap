@@ -127,7 +127,7 @@ export default function StoreMapPage() {
           <div class="gs-popup-meta">
             <span class="gs-tag">商圈 · ${s.area}</span>
             <span class="gs-tag">营业 ${s.hours}</span>
-            <span class="gs-tag rate-tag">评分 ${s.rate.toFixed(1)}</span>
+            <span class="gs-tag rate-tag">${s.rate !== null ? '评分 ' + s.rate.toFixed(1) : '暂无评分'}</span>
           </div>
           <a class="gs-nav-btn" href="${navUrl}" target="_blank" rel="noopener noreferrer">
             <span class="gs-nav-icon">
@@ -865,7 +865,7 @@ export default function StoreMapPage() {
                         <div className="gs-store-meta">
                           <span className="gs-tag">{store.area}</span>
                           <span className="gs-tag">{store.hours}</span>
-                          <span className="gs-tag rate">★ {store.rate.toFixed(1)}</span>
+                          <span className="gs-tag rate">{store.rate !== null ? `★ ${store.rate.toFixed(1)}` : '暂无评分'}</span>
                         </div>
                       </div>
                     </div>

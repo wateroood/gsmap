@@ -11,7 +11,7 @@ export interface IStore {
   addr: string;
   area: string;
   hours: string;
-  rate: number;
+  rate: number | null;
 }
 
 export const BRAND_META: Record<BrandKey, { label: string; cls: string }> = {
@@ -56,6 +56,7 @@ export const STORES: IStore[] = [
   { brand: 'star', name: '国色星洗(保利·康桥店)', short: '保利康桥店', lat: 30.664336, lng: 104.118732, addr: '保利·康桥东南2门旁(杉板桥地铁站B口旁)', area: '建设路', hours: '08:30-20:00', rate: 4.2 },
   { brand: 'star', name: '国色星洗(三千城店)', short: '三千城店', lat: 30.674133, lng: 104.111759, addr: '建业路159号(踏水桥地铁站B口步行440米)', area: '建设路', hours: '08:30-20:00', rate: 4.3 },
   { brand: 'star', name: '国色星洗(佳乐·澜郡夏宫店)', short: '澜郡夏宫店', lat: 30.786464, lng: 104.156717, addr: '蜀龙大道南段128号', area: '三河', hours: '24小时', rate: 4.0 },
+  { brand: 'star', name: '国色星洗(天府未来城店)', short: '天府未来城店', lat: 30.436919, lng: 104.092996, addr: '天府未来城', area: '天府新区', hours: '08:30-20:00', rate: null },
 
   // ---------- 国色净衣馆（11 家） ----------
   { brand: 'pure', name: '国色净衣馆', short: '紫荆总店', lat: 30.614282, lng: 104.049736, addr: '紫杉路步行街40号', area: '紫荆', hours: '08:30-20:00', rate: 4.0 },
