@@ -1,15 +1,15 @@
 import { Routes, Route } from "react-router-dom";
-import { Welcome } from "@lark-apaas/client-toolkit-lite";
 import { Layout } from "@/components/Layout";
+import StoreMapPage from "@/pages/StoreMap/StoreMapPage";
 import NotFoundPage from "@/pages/NotFoundPage/NotFoundPage";
 
 export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route index element={<Welcome />} />
-        <Route path="*" element={<NotFoundPage />} />
+        <Route index element={<StoreMapPage />} />
       </Route>
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
