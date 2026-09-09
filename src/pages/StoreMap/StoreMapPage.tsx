@@ -757,7 +757,7 @@ export default function StoreMapPage() {
             justify-content: center;
             gap: 6px;
             position: absolute;
-            bottom: -34px;
+            top: calc(60vh - 1px);
             left: 50%;
             transform: translateX(-50%);
             background: var(--card);
@@ -769,18 +769,17 @@ export default function StoreMapPage() {
             font-weight: 500;
             color: var(--ink-2);
             cursor: pointer;
-            z-index: 31;
+            z-index: 1000;
             box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-            transition: all 0.2s ease;
+            transition: top 0.3s ease, background 0.2s ease, color 0.2s ease;
             white-space: nowrap;
           }
           .gs-mobile-toggle:hover {
             background: var(--gold-soft);
             color: var(--gold);
           }
-          .gs-panel.collapsed .gs-mobile-toggle {
-            bottom: -1px;
-            transform: translateX(-50%) translateY(100%);
+          .gs-panel.collapsed ~ .gs-mobile-toggle {
+            top: 52px;
           }
 
           .gs-map-tip {
@@ -901,26 +900,26 @@ export default function StoreMapPage() {
             <div className="gs-empty">当前筛选下暂无门店</div>
           )}
         </div>
-
-        {/* 移动端折叠按钮 */}
-        <button
-          className="gs-mobile-toggle"
-          onClick={togglePanel}
-          aria-label={panelCollapsed ? '展开面板' : '收起面板'}
-        >
-          {panelCollapsed ? (
-            <>
-              <ChevronDown size={14} />
-              展开门店列表
-            </>
-          ) : (
-            <>
-              <ChevronUp size={14} />
-              收起列表
-            </>
-          )}
-        </button>
       </aside>
+
+      {/* 移动端折叠按钮 — 放在面板外避免受 panel stacking context 限制 */}
+      <button
+        className="gs-mobile-toggle"
+        onClick={togglePanel}
+        aria-label={panelCollapsed ? '展开面板' : '收起面板'}
+      >
+        {panelCollapsed ? (
+          <>
+            <ChevronDown size={14} />
+            展开门店列表
+          </>
+        ) : (
+          <>
+            <ChevronUp size={14} />
+            收起列表
+          </>
+        )}
+      </button>
 
       {/* 桌面端折叠按钮 — 始终可见，位置随面板折叠联动 */}
       <button
