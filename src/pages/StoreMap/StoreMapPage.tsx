@@ -500,33 +500,48 @@ export default function StoreMapPage() {
           padding: 40px 0;
         }
 
-        /* ===== 折叠按钮 ===== */
+        /* ===== 折叠按钮（桌面端） ===== */
         .gs-collapse-btn {
           position: absolute;
           top: 50%;
           left: 384px;
           transform: translateY(-50%);
-          width: 24px;
-          height: 56px;
+          width: 28px;
+          height: 64px;
           background: var(--card);
           border: 1px solid var(--line);
           border-left: none;
-          border-radius: 0 8px 8px 0;
+          border-radius: 0 10px 10px 0;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          z-index: 20;
-          transition: left 0.3s ease;
-          box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+          z-index: 1000;
+          transition: left 0.3s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+          box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.08);
           color: var(--ink-2);
+          outline: none;
         }
         .gs-collapse-btn:hover {
-          background: var(--paper);
-          color: var(--ink);
+          background: var(--gold);
+          color: #fff;
+          box-shadow: 2px 4px 14px rgba(185, 138, 62, 0.3);
+          width: 32px;
         }
-        .gs-collapse-btn.collapsed {
+        .gs-collapse-btn:focus-visible {
+          outline: 2px solid var(--gold);
+          outline-offset: 2px;
+        }
+        .gs-panel.collapsed ~ .gs-collapse-btn {
           left: 0;
+          border-radius: 0 10px 10px 0;
+          border-left: none;
+        }
+        .gs-collapse-btn-icon {
+          transition: transform 0.3s ease;
+        }
+        .gs-panel.collapsed ~ .gs-collapse-btn .gs-collapse-btn-icon {
+          transform: rotate(180deg);
         }
 
         /* ===== 地图区域 ===== */
@@ -731,6 +746,7 @@ export default function StoreMapPage() {
             display: none;
           }
 
+        /* 移动端：面板在顶部，折叠按钮在面板底部边缘 */
           .gs-collapse-btn {
             display: none;
           }
@@ -741,23 +757,30 @@ export default function StoreMapPage() {
             justify-content: center;
             gap: 6px;
             position: absolute;
-            bottom: -1px;
+            bottom: -34px;
             left: 50%;
-            transform: translateX(-50%) translateY(100%);
+            transform: translateX(-50%);
             background: var(--card);
             border: 1px solid var(--line);
             border-top: none;
-            border-radius: 0 0 12px 12px;
-            padding: 6px 20px;
+            border-radius: 0 0 14px 14px;
+            padding: 7px 24px;
             font-size: 12px;
+            font-weight: 500;
             color: var(--ink-2);
             cursor: pointer;
             z-index: 31;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+          }
+          .gs-mobile-toggle:hover {
+            background: var(--gold-soft);
+            color: var(--gold);
           }
           .gs-panel.collapsed .gs-mobile-toggle {
-            transform: translateX(-50%) translateY(0);
-            bottom: -30px;
+            bottom: -1px;
+            transform: translateX(-50%) translateY(100%);
           }
 
           .gs-map-tip {
@@ -899,22 +922,14 @@ export default function StoreMapPage() {
         </button>
       </aside>
 
-      {/* 桌面端折叠按钮 */}
+      {/* 桌面端折叠按钮 — 始终可见，位置随面板折叠联动 */}
       <button
-        className={cn('gs-collapse-btn', 'hidden', 'md:flex', panelCollapsed && 'collapsed')}
+        className="gs-collapse-btn"
         onClick={togglePanel}
         aria-label={panelCollapsed ? '展开面板' : '收起面板'}
-        style={{ display: panelCollapsed ? 'flex' : 'none' }}
+        title={panelCollapsed ? '展开面板' : '收起面板'}
       >
-        {panelCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-      </button>
-      <button
-        className="gs-collapse-btn hidden md:flex"
-        onClick={togglePanel}
-        aria-label="收起面板"
-        style={{ display: panelCollapsed ? 'none' : 'flex' }}
-      >
-        <ChevronLeft size={14} />
+        <ChevronLeft className="gs-collapse-btn-icon" size={16} strokeWidth={2.5} />
       </button>
 
       {/* 地图区域 */}
