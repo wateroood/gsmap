@@ -80,14 +80,14 @@ export default function StoreMapPage() {
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     // 高德瓦片
-    const amapLayer = L.tileLayer(
-      'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
-      {
-        subdomains: ['1', '2', '3', '4'],
-        maxZoom: 18,
-        attribution: '&copy; 高德地图',
-      }
-    );
+      const amapLayer = L.tileLayer(
+        'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=10&x={x}&y={y}&z={z}',
+        {
+          subdomains: ['1', '2', '3', '4'],
+          maxZoom: 18,
+          attribution: '&copy; 高德地图',
+        }
+      );
     amapLayer.addTo(map);
 
     // 高德瓦片异常回退 OSM
@@ -117,9 +117,9 @@ export default function StoreMapPage() {
             <div class="gs-label">${s.short}</div>
           </div>
         `,
-        iconSize: [120, 54],
-        iconAnchor: [15, 44],
-        popupAnchor: [0, -42],
+        iconSize: [140, 64],
+        iconAnchor: [20, 54],
+        popupAnchor: [0, -52],
       });
 
       const marker = L.marker([s.lat, s.lng], { icon, title: s.name });
@@ -241,18 +241,18 @@ export default function StoreMapPage() {
       {/* 自定义 Marker 样式 + 应用样式 */}
       <style>{`
         :root {
-          --ink: #2a2622;
-          --ink-2: #6b635a;
-          --ink-3: #94897d;
-          --paper: #f6f1e8;
-          --card: #fffdf8;
-          --line: #e5dccb;
-          --gold: #b98a3e;
-          --gold-soft: #f0e6d0;
-          --red: #b23a2c;
-          --red-soft: #f6e0db;
-          --blue: #1f5f7a;
-          --blue-soft: #ddebf0;
+          --ink: #141210;
+          --ink-2: #4a443d;
+          --ink-3: #7a7066;
+          --paper: #f2f5f8;
+          --card: #ffffff;
+          --line: #dde3ea;
+          --gold: #d99523;
+          --gold-soft: #fff2d6;
+          --red: #e53935;
+          --red-soft: #ffe0de;
+          --blue: #1565c0;
+          --blue-soft: #d6e8ff;
         }
         * { box-sizing: border-box; }
         html, body, #root { height: 100%; margin: 0; padding: 0; }
@@ -287,8 +287,8 @@ export default function StoreMapPage() {
 
         .gs-panel-head {
           padding: 20px 22px 14px;
-          background: linear-gradient(180deg, #fbf6ec, var(--card));
-          border-bottom: 1px solid var(--line));
+          background: linear-gradient(180deg, #e8f0fe 0%, var(--card) 100%);
+          border-bottom: 1px solid var(--line);
         }
         .gs-brand-row {
           display: flex;
@@ -300,7 +300,7 @@ export default function StoreMapPage() {
           height: 34px;
           border-radius: 9px;
           flex: none;
-          background: linear-gradient(135deg, #c2452f, #8e2a1e);
+          background: linear-gradient(135deg, #ff5252, #c62828);
           color: #fff;
           display: flex;
           align-items: center;
@@ -308,7 +308,7 @@ export default function StoreMapPage() {
           font-weight: 700;
           font-size: 15px;
           letter-spacing: 1px;
-          box-shadow: 0 2px 6px rgba(140, 50, 30, 0.28);
+          box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
         }
         .gs-title {
           font-size: 20px;
@@ -335,6 +335,12 @@ export default function StoreMapPage() {
           border-radius: 10px;
           padding: 8px 4px;
           text-align: center;
+          transition: all 0.2s;
+        }
+        .gs-stat:hover {
+          border-color: var(--ink-3);
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
         .gs-stat b {
           display: block;
@@ -386,8 +392,14 @@ export default function StoreMapPage() {
           border-color: transparent;
         }
         .gs-filter-btn:hover:not(.active) {
-          border-color: var(--gold);
+          border-color: var(--red);
           color: var(--ink);
+          background: var(--red-soft);
+          transform: translateY(-1px);
+          box-shadow: 0 2px 6px rgba(229, 57, 53, 0.15);
+        }
+        .gs-filter-btn:active:not(.active) {
+          transform: translateY(0);
         }
 
         .gs-legend {
@@ -455,12 +467,14 @@ export default function StoreMapPage() {
           border: 1px solid transparent;
         }
         .gs-store-item:hover {
-          background: var(--paper);
-          border-color: var(--line);
+          background: #f0f6ff;
+          border-color: var(--blue);
+          transform: translateX(2px);
         }
         .gs-store-item.active {
-          background: var(--gold-soft);
-          border-color: rgba(185, 138, 62, 0.3);
+          background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+          border-color: var(--blue);
+          box-shadow: 0 2px 8px rgba(21, 101, 192, 0.15);
         }
         .gs-store-pin {
           width: 10px;
@@ -509,7 +523,7 @@ export default function StoreMapPage() {
           border-radius: 10px;
           line-height: 1.4;
         }
-        .gs-tag.rate { color: var(--gold); font-weight: 500; }
+        .gs-tag.rate { color: var(--gold); font-weight: 600; background: var(--gold-soft); }
 
         .gs-empty {
           text-align: center;
@@ -531,8 +545,9 @@ export default function StoreMapPage() {
           transition: border-color 0.2s, background 0.2s;
         }
         .gs-search-input:focus-within {
-          border-color: var(--red);
+          border-color: var(--blue);
           background: #fff;
+          box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
         }
         .gs-search-icon {
           position: absolute;
@@ -598,9 +613,9 @@ export default function StoreMapPage() {
           outline: none;
         }
         .gs-collapse-btn:hover {
-          background: var(--gold);
+          background: var(--red);
           color: #fff;
-          box-shadow: 2px 4px 14px rgba(185, 138, 62, 0.3);
+          box-shadow: 2px 4px 14px rgba(229, 57, 53, 0.35);
           width: 32px;
         }
         .gs-collapse-btn:focus-visible {
@@ -634,14 +649,15 @@ export default function StoreMapPage() {
           top: 16px;
           left: 50%;
           transform: translateX(-50%);
-          background: rgba(255, 253, 248, 0.92);
-          backdrop-filter: blur(8px);
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(10px);
           padding: 8px 18px;
           border-radius: 20px;
           font-size: 12px;
-          color: var(--ink-2);
+          color: var(--ink);
+          font-weight: 500;
           z-index: 500;
-          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
           border: 1px solid var(--line);
           display: flex;
           align-items: center;
@@ -669,13 +685,13 @@ export default function StoreMapPage() {
           line-height: 1;
         }
         .gs-marker .pin {
-          width: 22px;
-          height: 22px;
+          width: 30px;
+          height: 30px;
           border-radius: 50% 50% 50% 0;
           transform: rotate(-45deg);
           background: var(--pin-color, var(--red));
-          border: 2.5px solid #fff;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+          border: 3px solid #fff;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0,0,0,0.1);
           position: relative;
         }
         .gs-marker .pin-inner {
@@ -683,23 +699,28 @@ export default function StoreMapPage() {
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: 6px;
-          height: 6px;
+          width: 8px;
+          height: 8px;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.85);
+          background: rgba(255, 255, 255, 0.9);
+          box-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
         .gs-marker .gs-label {
-          margin-top: 3px;
-          font-size: 11px;
-          font-weight: 500;
+          margin-top: 4px;
+          font-size: 11.5px;
+          font-weight: 600;
           color: var(--ink);
-          background: rgba(255, 255, 255, 0.92);
-          padding: 2px 7px;
-          border-radius: 10px;
+          background: #ffffff;
+          padding: 3px 9px;
+          border-radius: 12px;
           white-space: nowrap;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
           border: 1px solid var(--line);
-          transition: opacity 0.2s;
+          transition: opacity 0.2s, transform 0.2s;
+        }
+        .gs-marker:hover .gs-label {
+          transform: scale(1.05);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
         }
         /* 缩放级别低时淡化标签 */
         .map-zoom-low .gs-marker .gs-label {
@@ -773,7 +794,7 @@ export default function StoreMapPage() {
           gap: 6px;
           width: 100%;
           padding: 9px 0;
-          background: linear-gradient(135deg, var(--red), #8e2a1e);
+          background: linear-gradient(135deg, #ff5252, #c62828);
           color: #fff;
           font-size: 13px;
           font-weight: 600;
@@ -782,8 +803,8 @@ export default function StoreMapPage() {
           transition: all 0.2s;
         }
         .gs-nav-btn:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(178, 58, 44, 0.35);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(229, 57, 53, 0.4);
         }
         .gs-nav-icon {
           display: flex;
