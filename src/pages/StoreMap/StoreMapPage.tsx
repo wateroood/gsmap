@@ -204,7 +204,7 @@ export default function StoreMapPage() {
     if (!map) return;
     const timer = setTimeout(() => map.invalidateSize(), 300);
     return () => clearTimeout(timer);
-  }, [panelCollapsed]);
+   }, [panelCollapsed]);
 
   // 筛选 / 搜索变化时更新 marker 显示
   useEffect(() => {
