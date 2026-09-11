@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Search, X } from 'lucide-react';
 import { STORES, BRAND_META, BRAND_ORDER, type IStore, type BrandKey } from '@/data/stores';
 import { cn } from '@/lib/utils';
 
@@ -31,6 +31,7 @@ export default function StoreMapPage() {
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const [filter, setFilter] = useState<FilterKey>('all');
+  const [keyword, setKeyword] = useState('');
   const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [activeStoreIdx, setActiveStoreIdx] = useState<number | null>(null);
   const [mobileListOpen, setMobileListOpen] = useState(false);
@@ -43,10 +44,20 @@ export default function StoreMapPage() {
     areas: new Set(STORES.map(s => s.area)).size,
   }), []);
 
+  const kw = keyword.trim().toLowerCase();
   const filteredStores = useMemo(() => {
-    if (filter === 'all') return STORES;
-    return STORES.filter(s => s.brand === filter);
-  }, [filter]);
+    return STORES.filter(s => {
+      const brandOk = filter === 'all' || s.brand === filter;
+      if (!brandOk) return false;
+      if (!kw) return true;
+      return (
+        s.name.toLowerCase().includes(kw) ||
+        s.short.toLowerCase().includes(kw) ||
+        s.addr.toLowerCase().includes(kw) ||
+        s.area.toLowerCase().includes(kw)
+      );
+    });
+  }, [filter, kw]);
 
   const tipText = useMemo(() => {
     if (filter === 'all') return `共 ${stats.total} 家门店 · 覆盖 ${stats.areas} 个片区 · 点击列表可定位`;
@@ -185,17 +196,24 @@ export default function StoreMapPage() {
     return () => clearTimeout(timer);
   }, [panelCollapsed]);
 
-  // 筛选变化时更新 marker 显示
+  // 筛选 / 搜索变化时更新 marker 显示
   useEffect(() => {
     markersRef.current.forEach((m, idx) => {
       const store = STORES[idx];
-      const show = filter === 'all' || store.brand === filter;
+      const brandOk = filter === 'all' || store.brand === filter;
+      const kwOk =
+        !kw ||
+        store.name.toLowerCase().includes(kw) ||
+        store.short.toLowerCase().includes(kw) ||
+        store.addr.toLowerCase().includes(kw) ||
+        store.area.toLowerCase().includes(kw);
+      const show = brandOk && kwOk;
       const el = m.getElement();
       if (el) el.style.display = show ? '' : 'none';
       if (!show) m.closePopup();
     });
     setActiveStoreIdx(null);
-  }, [filter]);
+  }, [filter, kw]);
 
   // 点击列表项定位到门店
   const handleStoreClick = (store: IStore, idx: number) => {
@@ -499,6 +517,63 @@ export default function StoreMapPage() {
           font-size: 13px;
           padding: 40px 0;
         }
+
+        /* ===== 搜索框 ===== */
+        .gs-search-wrap { padding: 0 22px 14px; }
+        .gs-search-input {
+          position: relative;
+          display: flex;
+          align-items: center;
+          height: 40px;
+          background: var(--paper);
+          border: 1px solid var(--line);
+          border-radius: 10px;
+          transition: border-color 0.2s, background 0.2s;
+        }
+        .gs-search-input:focus-within {
+          border-color: var(--red);
+          background: #fff;
+        }
+        .gs-search-icon {
+          position: absolute;
+          left: 12px;
+          color: var(--ink-3);
+          pointer-events: none;
+          flex-shrink: 0;
+        }
+        .gs-search-field {
+          flex: 1;
+          min-width: 0;
+          height: 100%;
+          padding: 0 36px 0 36px;
+          border: none;
+          outline: none;
+          background: transparent;
+          font-size: 13px;
+          color: var(--ink);
+          font-family: inherit;
+        }
+        .gs-search-field::placeholder { color: var(--ink-3); }
+        .gs-search-clear {
+          position: absolute;
+          right: 8px;
+          top: 50%;
+          transform: translateY(-50%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          border: none;
+          border-radius: 50%;
+          background: var(--ink-3);
+          color: #fff;
+          cursor: pointer;
+          opacity: 0.6;
+          transition: opacity 0.15s;
+          padding: 0;
+        }
+        .gs-search-clear:hover { opacity: 1; }
 
         /* ===== 折叠按钮（桌面端） ===== */
         .gs-collapse-btn {
@@ -846,6 +921,29 @@ export default function StoreMapPage() {
           ))}
         </div>
 
+        <div className="gs-search-wrap">
+          <div className="gs-search-input">
+            <Search className="gs-search-icon" size={16} strokeWidth={2} />
+            <input
+              type="text"
+              value={keyword}
+              onChange={e => setKeyword(e.target.value)}
+              placeholder="搜索门店名称/地址/商圈"
+              className="gs-search-field"
+            />
+            {keyword && (
+              <button
+                type="button"
+                className="gs-search-clear"
+                onClick={() => setKeyword('')}
+                aria-label="清除搜索"
+              >
+                <X size={14} strokeWidth={2.5} />
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="gs-legend">
           <div className="gs-legend-item">
             <span className="gs-legend-pin red" />
@@ -897,7 +995,9 @@ export default function StoreMapPage() {
             );
           })}
           {filteredStores.length === 0 && (
-            <div className="gs-empty">当前筛选下暂无门店</div>
+            <div className="gs-empty">
+              {keyword ? '未找到相关门店，换个关键字试试' : '当前筛选下暂无门店'}
+            </div>
           )}
         </div>
       </aside>
