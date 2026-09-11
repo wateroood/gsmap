@@ -59,12 +59,8 @@ export default function StoreMapPage() {
     });
   }, [filter, kw]);
 
-  const tipText = useMemo(() => {
-    if (filter === 'all') return `共 ${stats.total} 家门店 · 覆盖 ${stats.areas} 个片区 · 点击列表可定位`;
-    if (filter === 'star') return `国色星洗 ${stats.star} 家门店`;
-    if (filter === 'pure') return `国色净衣馆 ${stats.pure} 家门店`;
-    return `国色1678 高端洗护 ${stats.lux} 家门店`;
-  }, [filter, stats]);
+  const hasFilter = filter !== 'all' || keyword.trim() !== '';
+  const tipSuffix = '家门店 · 点击列表可定位';
 
   // 初始化地图
   useEffect(() => {
@@ -142,8 +138,8 @@ export default function StoreMapPage() {
           <div class="gs-popup-addr">${s.addr}</div>
           <div class="gs-popup-meta">
             <span class="gs-tag">商圈 · ${s.area}</span>
-            <span class="gs-tag">营业 ${s.hours}</span>
-            <span class="gs-tag rate-tag">${s.rate !== null ? '评分 ' + s.rate.toFixed(1) : '暂无评分'}</span>
+            <span class="gs-tag hours-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>${s.hours}</span>
+            <span class="gs-tag rate-tag"><span style="font-size:11px;">★</span>${s.rate !== null ? s.rate.toFixed(1) + ' 分' : '暂无评分'}</span>
           </div>
           <a class="gs-nav-btn" href="${navUrl}" target="_blank" rel="noopener noreferrer">
             <span class="gs-nav-icon">
@@ -163,6 +159,15 @@ export default function StoreMapPage() {
 
       marker.on('click', () => {
         marker.openPopup();
+        // 清除其他 marker 的 active
+        markers.forEach(m => {
+          const el = m.getElement();
+          if (el) el.querySelector('.gs-marker')?.classList.remove('active');
+        });
+        // 当前 marker 加 active（glow色通过CSS变量在pin上继承）
+        const markerEl = marker.getElement();
+        const markerInner = markerEl?.querySelector('.gs-marker');
+        if (markerInner) markerInner.classList.add('active');
         setActiveStoreIdx(idx);
       });
 
@@ -227,6 +232,16 @@ export default function StoreMapPage() {
     if (!map || !marker) return;
 
     setActiveStoreIdx(idx);
+
+    // 清除其他 marker 的 active，给当前加 active
+    markersRef.current.forEach(m => {
+      const el = m.getElement();
+      if (el) el.querySelector('.gs-marker')?.classList.remove('active');
+    });
+    const markerEl = marker.getElement();
+    const markerInner = markerEl?.querySelector('.gs-marker');
+    if (markerInner) markerInner.classList.add('active');
+
     map.flyTo([store.lat, store.lng], Math.max(map.getZoom(), 15), { duration: 0.6 });
     setTimeout(() => marker.openPopup(), 650);
 
@@ -291,13 +306,16 @@ export default function StoreMapPage() {
         }
 
         .gs-panel-head {
-          padding: 20px 22px 16px;
+          padding: 16px 20px 12px;
           background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
           border-bottom: none;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
         }
         .gs-brand-row {
           display: flex;
-          align-items: baseline;
+          align-items: center;
           gap: 10px;
         }
         .gs-brand-mark {
@@ -314,6 +332,35 @@ export default function StoreMapPage() {
           font-size: 15px;
           letter-spacing: 1px;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+        }
+        .gs-head-collapse-btn {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 5px 10px;
+          background: rgba(255, 255, 255, 0.9);
+          color: var(--blue);
+          border: 1px solid rgba(255, 255, 255, 0.5);
+          border-radius: 8px;
+          font-size: 11.5px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          font-family: inherit;
+          flex: none;
+          white-space: nowrap;
+        }
+        .gs-head-collapse-btn:hover {
+          background: #fff;
+          color: #0d47a1;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+        .gs-head-collapse-btn svg {
+          transition: transform 0.3s ease;
+        }
+        .gs-panel.collapsed .gs-head-collapse-btn svg {
+          transform: rotate(180deg);
         }
         .gs-title {
           font-size: 20px;
@@ -333,7 +380,6 @@ export default function StoreMapPage() {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 8px;
-          margin-top: 14px;
         }
         .gs-stat {
           position: relative;
@@ -384,14 +430,15 @@ export default function StoreMapPage() {
         .gs-filters {
           display: flex;
           gap: 8px;
-          padding: 14px 22px 6px;
+          padding: 12px 20px 0;
         }
         .gs-filter-btn {
           flex: 1;
           border: 1px solid var(--line);
           background: var(--card);
-          border-radius: 20px;
+          border-radius: 10px;
           padding: 7px 0;
+          height: 34px;
           font-size: 12px;
           color: var(--ink-2);
           cursor: pointer;
@@ -434,12 +481,13 @@ export default function StoreMapPage() {
         .gs-legend {
           display: flex;
           gap: 14px;
-          padding: 10px 22px 8px;
+          padding: 12px 20px;
           font-size: 11.5px;
           color: var(--ink-2);
           border-bottom: 1px solid var(--line);
           align-items: center;
           flex-wrap: wrap;
+          margin-top: 12px;
         }
         .gs-legend-item {
           display: flex;
@@ -461,13 +509,15 @@ export default function StoreMapPage() {
         .gs-list-wrap {
           flex: 1;
           overflow-y: auto;
-          padding: 8px 14px 20px;
+          padding: 12px 12px 16px;
         }
         .gs-list-wrap::-webkit-scrollbar { width: 6px; }
         .gs-list-wrap::-webkit-scrollbar-thumb {
-          background: var(--line);
+          background: #cfd8dc;
           border-radius: 3px;
+          transition: background 0.2s;
         }
+        .gs-list-wrap::-webkit-scrollbar-thumb:hover { background: #90caf9; }
         .gs-list-wrap::-webkit-scrollbar-track { background: transparent; }
 
         .gs-group-title {
@@ -601,28 +651,66 @@ export default function StoreMapPage() {
         .gs-tag.rate .rate-star { font-size: 13px; }
 
         .gs-empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          padding: 48px 20px;
           text-align: center;
+        }
+        .gs-empty-icon {
+          width: 48px;
+          height: 48px;
           color: var(--ink-3);
-          font-size: 13px;
-          padding: 40px 0;
+          opacity: 0.6;
+        }
+        .gs-empty-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--ink);
+          margin: 0;
+        }
+        .gs-empty-desc {
+          font-size: 12px;
+          color: var(--ink-3);
+          line-height: 1.5;
+          margin: 0;
+        }
+        .gs-empty-btn {
+          margin-top: 8px;
+          padding: 6px 16px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--blue);
+          background: var(--blue-soft);
+          border: 1px solid rgba(21, 101, 192, 0.25);
+          border-radius: 8px;
+          cursor: pointer;
+          font-family: inherit;
+          transition: all 0.15s;
+        }
+        .gs-empty-btn:hover {
+          background: var(--blue);
+          color: #fff;
+          border-color: var(--blue);
         }
 
         /* ===== 搜索框 ===== */
-        .gs-search-wrap { padding: 0 22px 14px; }
+        .gs-search-wrap { padding: 12px 20px 0; }
         .gs-search-input {
           position: relative;
           display: flex;
           align-items: center;
-          height: 40px;
-          background: var(--paper);
+          height: 34px;
+          background: var(--card);
           border: 1px solid var(--line);
           border-radius: 10px;
-          transition: border-color 0.2s, background 0.2s;
+          transition: border-color 0.15s, box-shadow 0.15s;
         }
         .gs-search-input:focus-within {
           border-color: var(--blue);
-          background: #fff;
-          box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+          box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.15);
         }
         .gs-search-icon {
           position: absolute;
@@ -646,67 +734,30 @@ export default function StoreMapPage() {
         .gs-search-field::placeholder { color: var(--ink-3); }
         .gs-search-clear {
           position: absolute;
-          right: 8px;
+          right: 6px;
           top: 50%;
           transform: translateY(-50%);
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 24px;
-          height: 24px;
+          width: 22px;
+          height: 22px;
           border: none;
           border-radius: 50%;
-          background: var(--ink-3);
-          color: #fff;
+          background: var(--paper);
+          color: var(--ink-3);
           cursor: pointer;
-          opacity: 0.6;
-          transition: opacity 0.15s;
+          transition: all 0.15s;
           padding: 0;
         }
-        .gs-search-clear:hover { opacity: 1; }
+        .gs-search-clear:hover {
+          background: var(--muted);
+          color: var(--ink);
+        }
 
-        /* ===== 折叠按钮（桌面端） ===== */
+        /* ===== 折叠按钮（桌面端）—— 已移入标题栏，此为地图区悬浮展开按钮 ===== */
         .gs-collapse-btn {
-          position: absolute;
-          top: 50%;
-          left: 384px;
-          transform: translateY(-50%);
-          width: 28px;
-          height: 64px;
-          background: var(--card);
-          border: 1px solid var(--line);
-          border-left: none;
-          border-radius: 0 10px 10px 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          z-index: 1000;
-          transition: left 0.3s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-          box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.08);
-          color: var(--ink-2);
-          outline: none;
-        }
-        .gs-collapse-btn:hover {
-          background: var(--red);
-          color: #fff;
-          box-shadow: 2px 4px 14px rgba(229, 57, 53, 0.35);
-          width: 32px;
-        }
-        .gs-collapse-btn:focus-visible {
-          outline: 2px solid var(--gold);
-          outline-offset: 2px;
-        }
-        .gs-panel.collapsed ~ .gs-collapse-btn {
-          left: 0;
-          border-radius: 0 10px 10px 0;
-          border-left: none;
-        }
-        .gs-collapse-btn-icon {
-          transition: transform 0.3s ease;
-        }
-        .gs-panel.collapsed ~ .gs-collapse-btn .gs-collapse-btn-icon {
-          transform: rotate(180deg);
+          display: none;
         }
 
         /* ===== 地图区域 ===== */
@@ -724,19 +775,32 @@ export default function StoreMapPage() {
           top: 16px;
           left: 50%;
           transform: translateX(-50%);
-          background: rgba(255, 255, 255, 0.95);
+          background: rgba(255, 255, 255, 0.96);
           backdrop-filter: blur(10px);
-          padding: 8px 18px;
+          padding: 7px 16px;
           border-radius: 20px;
           font-size: 12px;
-          color: var(--ink);
+          color: var(--ink-2);
           font-weight: 500;
           z-index: 500;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
           border: 1px solid var(--line);
           display: flex;
           align-items: center;
           gap: 8px;
+          transition: all 0.25s;
+        }
+        .gs-map-tip .tip-count {
+          color: var(--blue);
+          font-weight: 700;
+        }
+        .gs-map-tip.has-filter {
+          background: #e8f1fc;
+          border-color: rgba(21, 101, 192, 0.3);
+          color: var(--ink);
+        }
+        .gs-map-tip.has-filter .tip-count {
+          color: var(--blue);
         }
         .gs-pulse {
           width: 8px;
@@ -758,6 +822,7 @@ export default function StoreMapPage() {
           flex-direction: column;
           align-items: center;
           line-height: 1;
+          transition: transform 0.25s ease;
         }
         .gs-marker .pin {
           width: 30px;
@@ -768,6 +833,28 @@ export default function StoreMapPage() {
           border: 3px solid #fff;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0,0,0,0.1);
           position: relative;
+          transition: all 0.25s ease;
+        }
+        .gs-marker.active {
+          z-index: 1000 !important;
+          transform: translateY(-4px);
+        }
+        .gs-marker.gs-red .pin { --pin-glow: rgba(229, 57, 53, 0.45); }
+        .gs-marker.gs-blue .pin { --pin-glow: rgba(21, 101, 192, 0.45); }
+        .gs-marker.gs-gold .pin { --pin-glow: rgba(217, 149, 35, 0.45); }
+        .gs-marker.active .pin {
+          width: 36px;
+          height: 36px;
+          box-shadow:
+            0 6px 20px rgba(0, 0, 0, 0.4),
+            0 0 0 4px rgba(255, 255, 255, 0.9),
+            0 0 0 7px var(--pin-glow, rgba(21, 101, 192, 0.4));
+          animation: gs-pin-pulse 2s ease-in-out infinite;
+        }
+        @keyframes gs-pin-pulse {
+          0%, 100% { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.9), 0 0 0 7px var(--pin-glow, rgba(21, 101, 192, 0.4)); }
+          50% { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.95), 0 0 0 12px var(--pin-glow, rgba(21, 101, 192, 0.15)); }
+        }
         }
         .gs-marker .pin-inner {
           position: absolute;
@@ -857,10 +944,26 @@ export default function StoreMapPage() {
           margin-bottom: 12px;
         }
         .gs-popup-meta .gs-tag {
+          display: flex;
+          align-items: center;
+          gap: 3px;
           font-size: 10.5px;
+          color: var(--ink-2);
           background: var(--paper);
+          padding: 3px 8px;
+          border-radius: 6px;
+          line-height: 1.4;
+          font-weight: 500;
         }
-        .gs-popup-meta .rate-tag { color: var(--gold); }
+        .gs-popup-meta .gs-tag.rate-tag {
+          color: var(--gold);
+          font-weight: 700;
+        }
+        .gs-popup-meta .gs-tag.hours-tag svg {
+          width: 11px;
+          height: 11px;
+          color: var(--blue);
+        }
 
         .leaflet-popup-content .gs-nav-btn,
         .gs-popup .gs-nav-btn,
@@ -948,26 +1051,44 @@ export default function StoreMapPage() {
             top: calc(60vh - 1px);
             left: 50%;
             transform: translateX(-50%);
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-top: none;
+            background: var(--blue);
+            color: #fff;
+            border: none;
             border-radius: 0 0 14px 14px;
-            padding: 7px 24px;
+            padding: 7px 20px 9px;
             font-size: 12px;
-            font-weight: 500;
-            color: var(--ink-2);
+            font-weight: 600;
             cursor: pointer;
             z-index: 1000;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-            transition: top 0.3s ease, background 0.2s ease, color 0.2s ease;
+            box-shadow: 0 3px 10px rgba(21, 101, 192, 0.35);
+            transition: all 0.3s ease;
             white-space: nowrap;
           }
+          .gs-mobile-toggle::before {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 32px;
+            height: 3px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.5);
+          }
           .gs-mobile-toggle:hover {
-            background: var(--gold-soft);
-            color: var(--gold);
+            background: #0d47a1;
           }
           .gs-panel.collapsed ~ .gs-mobile-toggle {
             top: 52px;
+            background: var(--card);
+            color: var(--ink-2);
+            border: 1px solid var(--line);
+            border-top: none;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            padding-top: 8px;
+          }
+          .gs-panel.collapsed ~ .gs-mobile-toggle::before {
+            background: var(--blue);
           }
 
           .gs-map-tip {
@@ -990,10 +1111,20 @@ export default function StoreMapPage() {
         <div className="gs-panel-head">
           <div className="gs-brand-row">
             <div className="gs-brand-mark">国</div>
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <h1 className="gs-title">国色洗染 · 成都门店分布</h1>
               <div className="gs-sub">Chengdu Store Locator</div>
             </div>
+            <button
+              type="button"
+              className="gs-head-collapse-btn"
+              onClick={togglePanel}
+              aria-label={panelCollapsed ? '展开面板' : '收起面板'}
+              title={panelCollapsed ? '展开面板' : '收起面板'}
+            >
+              <ChevronLeft size={14} strokeWidth={2.5} />
+              <span>{panelCollapsed ? '展开' : '收起'}</span>
+            </button>
           </div>
           <div className="gs-stats">
             <div className="gs-stat total">
@@ -1111,7 +1242,25 @@ export default function StoreMapPage() {
           })}
           {filteredStores.length === 0 && (
             <div className="gs-empty">
-              {keyword ? '未找到相关门店，换个关键字试试' : '当前筛选下暂无门店'}
+              <svg className="gs-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="7"/>
+                <path d="m21 21-4.3-4.3"/>
+                <path d="M8 11h6"/>
+              </svg>
+              <p className="gs-empty-title">未找到匹配的门店</p>
+              <p className="gs-empty-desc">换个关键字或切换品牌试试</p>
+              {hasFilter && (
+                <button
+                  type="button"
+                  className="gs-empty-btn"
+                  onClick={() => {
+                    setFilter('all');
+                    setKeyword('');
+                  }}
+                >
+                  清空筛选
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -1136,22 +1285,12 @@ export default function StoreMapPage() {
         )}
       </button>
 
-      {/* 桌面端折叠按钮 — 始终可见，位置随面板折叠联动 */}
-      <button
-        className="gs-collapse-btn"
-        onClick={togglePanel}
-        aria-label={panelCollapsed ? '展开面板' : '收起面板'}
-        title={panelCollapsed ? '展开面板' : '收起面板'}
-      >
-        <ChevronLeft className="gs-collapse-btn-icon" size={16} strokeWidth={2.5} />
-      </button>
-
       {/* 地图区域 */}
       <div className="gs-map-wrap">
         <div ref={mapContainerRef} className="gs-map" />
-        <div className="gs-map-tip">
+        <div className={cn('gs-map-tip', hasFilter && 'has-filter')}>
           <span className="gs-pulse" />
-          <span>{tipText}</span>
+          <span>{hasFilter ? '筛选结果：' : '共 '}<span className="tip-count">{hasFilter ? filteredStores.length : stats.total}</span> {tipSuffix}</span>
         </div>
       </div>
     </div>
