@@ -79,48 +79,34 @@ export default function StoreMapPage() {
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // 高德瓦片
-      // 主底图：高德卫星影像 + 路网注记（色彩鲜艳、对比鲜明）
-      const satelliteLayer = L.tileLayer(
-        'https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+    // 高德标准彩色矢量电子地图（含道路、水系、绿地、建筑、文字注记）
+      const vectorLayer = L.tileLayer(
+        'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
         {
           subdomains: ['1', '2', '3', '4'],
           maxZoom: 18,
           attribution: '&copy; 高德地图',
         }
       );
-      satelliteLayer.addTo(map);
+      vectorLayer.addTo(map);
 
-      // 路网注记层（叠在卫星图上）
-      const labelLayer = L.tileLayer(
-        'https://webst0{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}',
-        {
-          subdomains: ['1', '2', '3', '4'],
-          maxZoom: 18,
-        }
-      );
-      labelLayer.addTo(map);
-
-      // 瓦片加载失败时回退到矢量彩图
+      // 瓦片加载失败时回退到 OSM
       let tileFailCount = 0;
-      const fallbackToVector = () => {
+      const fallbackToOSM = () => {
         if (tileFailCount > 15) return;
         tileFailCount++;
         if (tileFailCount === 15) {
-          map.removeLayer(satelliteLayer);
-          map.removeLayer(labelLayer);
+          map.removeLayer(vectorLayer);
           L.tileLayer(
-            'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
+            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             {
-              subdomains: ['1', '2', '3', '4'],
-              maxZoom: 18,
-              attribution: '&copy; 高德地图',
+              maxZoom: 19,
+              attribution: '&copy; OpenStreetMap contributors',
             }
           ).addTo(map);
         }
       };
-      satelliteLayer.on('tileerror', fallbackToVector);
-      labelLayer.on('tileerror', fallbackToVector);
+      vectorLayer.on('tileerror', fallbackToOSM);
 
     // 创建 Marker
     const markers: L.Marker[] = [];
