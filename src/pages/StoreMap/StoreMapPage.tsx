@@ -217,10 +217,10 @@ export default function StoreMapPage() {
         store.short.toLowerCase().includes(kw) ||
         store.addr.toLowerCase().includes(kw) ||
         store.area.toLowerCase().includes(kw);
-      const show = brandOk && kwOk;
-      const el = m.getElement();
-      if (el) el.style.display = show ? '' : 'none';
-      if (!show) m.closePopup();
+       const show = brandOk && kwOk;
+       const el = m.getElement();
+       if (el) el.style.display = show ? 'block' : 'none';
+       if (!show) m.closePopup();
     });
     setActiveStoreIdx(null);
   }, [filter, kw]);
@@ -958,6 +958,10 @@ export default function StoreMapPage() {
         .gs-popup-meta .gs-tag.rate-tag {
           color: var(--gold);
           font-weight: 700;
+          line-height: 1.4;
+        }
+        .gs-popup-meta .gs-tag.rate-tag span {
+          line-height: 1;
         }
         .gs-popup-meta .gs-tag.hours-tag svg {
           width: 11px;
