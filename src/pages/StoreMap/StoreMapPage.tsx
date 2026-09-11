@@ -80,28 +80,47 @@ export default function StoreMapPage() {
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     // 高德瓦片
-      const amapLayer = L.tileLayer(
-        'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=10&x={x}&y={y}&z={z}',
+      // 主底图：高德卫星影像 + 路网注记（色彩鲜艳、对比鲜明）
+      const satelliteLayer = L.tileLayer(
+        'https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
         {
           subdomains: ['1', '2', '3', '4'],
           maxZoom: 18,
           attribution: '&copy; 高德地图',
         }
       );
-    amapLayer.addTo(map);
+      satelliteLayer.addTo(map);
 
-    // 高德瓦片异常回退 OSM
-    let tileFailCount = 0;
-    amapLayer.on('tileerror', () => {
-      tileFailCount++;
-      if (tileFailCount > 8) {
-        map.removeLayer(amapLayer);
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '&copy; OpenStreetMap contributors',
-        }).addTo(map);
-      }
-    });
+      // 路网注记层（叠在卫星图上）
+      const labelLayer = L.tileLayer(
+        'https://webst0{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}',
+        {
+          subdomains: ['1', '2', '3', '4'],
+          maxZoom: 18,
+        }
+      );
+      labelLayer.addTo(map);
+
+      // 瓦片加载失败时回退到矢量彩图
+      let tileFailCount = 0;
+      const fallbackToVector = () => {
+        if (tileFailCount > 15) return;
+        tileFailCount++;
+        if (tileFailCount === 15) {
+          map.removeLayer(satelliteLayer);
+          map.removeLayer(labelLayer);
+          L.tileLayer(
+            'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
+            {
+              subdomains: ['1', '2', '3', '4'],
+              maxZoom: 18,
+              attribution: '&copy; 高德地图',
+            }
+          ).addTo(map);
+        }
+      };
+      satelliteLayer.on('tileerror', fallbackToVector);
+      labelLayer.on('tileerror', fallbackToVector);
 
     // 创建 Marker
     const markers: L.Marker[] = [];
