@@ -75,12 +75,12 @@ export default function StoreMapPage() {
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // 高德标准彩色矢量电子地图（含道路、水系、绿地、建筑、文字注记）
+    // 高德新版矢量电子地图（含道路、支路、水系、绿地、建筑、文字注记）
       const vectorLayer = L.tileLayer(
-        'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
+        'https://wprd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
         {
           subdomains: ['1', '2', '3', '4'],
-          maxZoom: 18,
+          maxZoom: 19,
           attribution: '&copy; 高德地图',
         }
       );
