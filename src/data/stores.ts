@@ -58,6 +58,15 @@ export const STORES: IStore[] = [
   { brand: 'star', name: '国色星洗(佳乐·澜郡夏宫店)', short: '澜郡夏宫店', lat: 30.786464, lng: 104.156717, addr: '蜀龙大道南段128号', area: '三河', hours: '24小时', rate: 4.0 },
   { brand: 'star', name: '国色星洗(天府未来城店)', short: '天府未来城店', lat: 30.436919, lng: 104.092996, addr: '天府未来城', area: '天府新区', hours: '08:30-20:00', rate: null },
   { brand: 'star', name: '国色星洗(秦皇寺店)', short: '秦皇寺店', lat: 30.435169, lng: 104.056568, addr: '秦皇寺', area: '天府新区', hours: '08:30-20:00', rate: null },
+  { brand: 'star', name: '国色星洗(雅居乐店)', short: '雅居乐店', lat: 30.483604, lng: 104.139728, addr: '麓山大道2段19号附1号', area: '天府新区', hours: '08:30-20:00', rate: null },
+  { brand: 'star', name: '国色星洗(华宇广场店)', short: '华宇广场店', lat: 30.623165, lng: 104.121737, addr: '上沙河铺街789号', area: '四川师范大学狮子山校区', hours: '08:30-20:00', rate: null },
+  { brand: 'star', name: '国色星洗(南城都汇店)', short: '南城都汇店', lat: 30.593386, lng: 104.052652, addr: '和硕西街与成汉中路交叉口西南180米', area: '石羊场', hours: '08:30-20:00', rate: null },
+  { brand: 'star', name: '国色星洗(麓湖天荟店)', short: '麓湖天荟店', lat: 30.449307, lng: 104.089415, addr: '麓湖南路东段1199号', area: '四川天府新区成都直管区', hours: '08:30-20:00', rate: null },
+  { brand: 'star', name: '国色星洗(湖滨城店)', short: '湖滨城店', lat: 30.475925, lng: 104.026977, addr: '天府怡心湖怡飞大道二段', area: '四川天府新区成都直管区', hours: '08:30-20:00', rate: null },
+  { brand: 'star', name: '国色星洗(广汇店)', short: '广汇店', lat: 30.441324, lng: 104.087120, addr: '隆祥街与双燕路东段交叉口北80米', area: '天府新区', hours: '08:30-20:00', rate: null },
+  { brand: 'star', name: '国色星洗(浔岭店)', short: '浔岭店', lat: 30.456387, lng: 104.078658, addr: '赤岭路88号', area: '天府新区', hours: '08:30-20:00', rate: null },
+  { brand: 'star', name: '国色星洗(五彩林堤店)', short: '五彩林堤店', lat: 30.462597, lng: 104.077660, addr: '天津路与汉州路交叉口西南280米', area: '四川天府新区成都直管区', hours: '08:30-20:00', rate: null },
+  { brand: 'star', name: '国色星洗(天府里店)', short: '天府里店', lat: 30.429862, lng: 104.091039, addr: '厦门路东段', area: '天府新区', hours: '08:30-20:00', rate: null },
 
   // ---------- 国色净衣馆（11 家） ----------
   { brand: 'pure', name: '国色净衣馆', short: '紫荆总店', lat: 30.614282, lng: 104.049736, addr: '紫杉路步行街40号', area: '紫荆', hours: '08:30-20:00', rate: 4.0 },
