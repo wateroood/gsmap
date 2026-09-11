@@ -291,9 +291,9 @@ export default function StoreMapPage() {
         }
 
         .gs-panel-head {
-          padding: 20px 22px 14px;
-          background: linear-gradient(180deg, #e8f0fe 0%, var(--card) 100%);
-          border-bottom: 1px solid var(--line);
+          padding: 20px 22px 16px;
+          background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
+          border-bottom: none;
         }
         .gs-brand-row {
           display: flex;
@@ -305,7 +305,7 @@ export default function StoreMapPage() {
           height: 34px;
           border-radius: 9px;
           flex: none;
-          background: linear-gradient(135deg, #ff5252, #c62828);
+          background: rgba(255, 255, 255, 0.25);
           color: #fff;
           display: flex;
           align-items: center;
@@ -313,7 +313,8 @@ export default function StoreMapPage() {
           font-weight: 700;
           font-size: 15px;
           letter-spacing: 1px;
-          box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
+          border: 1.5px solid rgba(255, 255, 255, 0.6);
+          backdrop-filter: blur(4px);
         }
         .gs-title {
           font-size: 20px;
@@ -321,10 +322,11 @@ export default function StoreMapPage() {
           letter-spacing: 0.5px;
           margin: 0;
           line-height: 1.2;
+          color: #fff;
         }
         .gs-sub {
           font-size: 11.5px;
-          color: var(--ink-3);
+          color: rgba(255, 255, 255, 0.75);
           margin-top: 4px;
           letter-spacing: 0.3px;
         }
@@ -335,35 +337,37 @@ export default function StoreMapPage() {
           margin-top: 14px;
         }
         .gs-stat {
-          background: var(--card);
-          border: 1px solid var(--line);
+          background: rgba(255, 255, 255, 0.15);
+          border: 1px solid rgba(255, 255, 255, 0.25);
           border-radius: 10px;
           padding: 8px 4px;
           text-align: center;
           transition: all 0.2s;
+          backdrop-filter: blur(4px);
         }
         .gs-stat:hover {
-          border-color: var(--ink-3);
+          background: rgba(255, 255, 255, 0.25);
+          border-color: rgba(255, 255, 255, 0.5);
           transform: translateY(-1px);
-          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
         .gs-stat b {
           display: block;
           font-size: 18px;
           font-weight: 700;
           line-height: 1.2;
+          color: #fff;
         }
         .gs-stat span {
           display: block;
           font-size: 10px;
-          color: var(--ink-3);
+          color: rgba(255, 255, 255, 0.8);
           margin-top: 2px;
           letter-spacing: 0.3px;
         }
-        .gs-stat.red b { color: var(--red); }
-        .gs-stat.blue b { color: var(--blue); }
-        .gs-stat.gold b { color: var(--gold); }
-        .gs-stat.total b { color: var(--ink); }
+        .gs-stat.red b { color: #ffcdd2; }
+        .gs-stat.blue b { color: #bbdefb; }
+        .gs-stat.gold b { color: #ffe082; }
+        .gs-stat.total b { color: #fff; }
 
         .gs-filters {
           display: flex;
@@ -799,7 +803,7 @@ export default function StoreMapPage() {
           gap: 6px;
           width: 100%;
           padding: 9px 0;
-          background: linear-gradient(135deg, #ff5252, #c62828);
+          background: linear-gradient(135deg, #1976d2, #0d47a1);
           color: #fff;
           font-size: 13px;
           font-weight: 600;
@@ -808,8 +812,9 @@ export default function StoreMapPage() {
           transition: all 0.2s;
         }
         .gs-nav-btn:hover {
+          background: linear-gradient(135deg, #1565c0, #0a3a85);
           transform: translateY(-2px);
-          box-shadow: 0 6px 16px rgba(229, 57, 53, 0.4);
+          box-shadow: 0 6px 16px rgba(21, 101, 192, 0.4);
         }
         .gs-nav-icon {
           display: flex;
