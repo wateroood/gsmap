@@ -23,7 +23,7 @@ export const BRAND_META: Record<BrandKey, { label: string; cls: string }> = {
 export const BRAND_ORDER: BrandKey[] = ['star', 'pure', 'lux'];
 
 export const STORES: IStore[] = [
-  // ---------- 国色星洗（32 家） ----------
+  // ---------- 国色星洗（33 家） ----------
   { brand: 'star', name: '国色星洗(大魔方店)', short: '大魔方店', lat: 30.573975, lng: 104.071775, addr: '科华南路1366号(心岛地铁站出入口步行350米)', area: '交子商圈', hours: '08:30-23:00', rate: 4.2 },
   { brand: 'star', name: '国色星洗(润富国际店)', short: '润富国际店', lat: 30.584765, lng: 104.048608, addr: '锦晖西二街333号', area: '石羊场', hours: '08:30-20:00', rate: 4.3 },
   { brand: 'star', name: '国色星洗(锦城大道店)', short: '锦城大道店', lat: 30.57566, lng: 104.049002, addr: '锦城大道1264号(锦城大道地铁站D口步行160米)', area: '石羊场', hours: '08:30-20:00', rate: 3.9 },
@@ -57,6 +57,7 @@ export const STORES: IStore[] = [
   { brand: 'star', name: '国色星洗(三千城店)', short: '三千城店', lat: 30.674133, lng: 104.111759, addr: '建业路159号(踏水桥地铁站B口步行440米)', area: '建设路', hours: '08:30-20:00', rate: 4.3 },
   { brand: 'star', name: '国色星洗(佳乐·澜郡夏宫店)', short: '澜郡夏宫店', lat: 30.786464, lng: 104.156717, addr: '蜀龙大道南段128号', area: '三河', hours: '24小时', rate: 4.0 },
   { brand: 'star', name: '国色星洗(天府未来城店)', short: '天府未来城店', lat: 30.436919, lng: 104.092996, addr: '天府未来城', area: '天府新区', hours: '08:30-20:00', rate: null },
+  { brand: 'star', name: '国色星洗(秦皇寺店)', short: '秦皇寺店', lat: 30.435169, lng: 104.056568, addr: '秦皇寺', area: '天府新区', hours: '08:30-20:00', rate: null },
 
   // ---------- 国色净衣馆（11 家） ----------
   { brand: 'pure', name: '国色净衣馆', short: '紫荆总店', lat: 30.614282, lng: 104.049736, addr: '紫杉路步行街40号', area: '紫荆', hours: '08:30-20:00', rate: 4.0 },
