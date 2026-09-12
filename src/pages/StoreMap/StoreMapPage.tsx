@@ -368,7 +368,7 @@ export default function StoreMapPage() {
           gap: 14px;
         }
         .gs-brand-logo {
-          height: 40px;
+          height: 44px;
           width: auto;
           flex: none;
           object-fit: contain;
