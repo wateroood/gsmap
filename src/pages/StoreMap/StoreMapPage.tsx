@@ -52,6 +52,7 @@ export default function StoreMapPage() {
   const [mobileListOpen, setMobileListOpen] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [locateResults, setLocateResults] = useState<{ idx: number; distance: number }[]>([]);
 
   const stats = useMemo(() => ({
     total: STORES.length,
@@ -150,16 +151,17 @@ export default function StoreMapPage() {
   }, [buildPopupHtml, highlightMarker]);
 
   // ===== 地址定位：匹配最近门店 =====
-  const locateRef = useRef<{ addrMarker: any; nearestIdx: number } | null>(null);
+  const locateRef = useRef<{ addrMarker: any; nearestMarker: any; nearestIdx: number } | null>(null);
   const locateInfoWindowRef = useRef<any>(null);
 
   const clearLocate = useCallback(() => {
     if (locateRef.current) {
       locateRef.current.addrMarker?.setMap(null);
-      document.querySelector(`.gs-marker[data-idx="${locateRef.current.nearestIdx}"]`)?.classList.remove('locate-glow');
+      locateRef.current.nearestMarker?.setMap(null);
       locateRef.current = null;
     }
     locateInfoWindowRef.current?.close();
+    setLocateResults([]);
   }, []);
 
   const locateAddress = useCallback((text: string) => {
@@ -181,7 +183,14 @@ export default function StoreMapPage() {
           if (d < minD) { minD = d; nearestIdx = i; }
         });
         if (nearestIdx < 0) return;
+        // 计算所有国色星洗门店距离，排序取前5
+        const allDist = STORES.map((st, i) => ({ idx: i, distance: st.brand === 'star' ? haversineKm(pos.lng, pos.lat, st.lng, st.lat) : Infinity }))
+          .filter(d => d.distance < Infinity)
+          .sort((a, b) => a.distance - b.distance)
+          .slice(0, 5);
         clearLocate();
+        setLocateResults(allDist);
+        // 地址定位点
         const addrMarker = new AMap.Marker({
           position: pos,
           content: '<div class="gs-locate-pin"></div>',
@@ -189,8 +198,16 @@ export default function StoreMapPage() {
           zIndex: 300,
         });
         map.add(addrMarker);
-        document.querySelector(`.gs-marker[data-idx="${nearestIdx}"]`)?.classList.add('locate-glow');
-        // 手动计算精确 zoom 与中心：根据地图尺寸和两点距离反推，确保地址点与门店点同时清晰可见
+        // 最近门店蓝色高亮标注
+        const nearestStore = STORES[nearestIdx];
+        const nearestMarker = new AMap.Marker({
+          position: [nearestStore.lng, nearestStore.lat],
+          content: '<div class="gs-nearest-pin"></div>',
+          anchor: 'bottom-center',
+          zIndex: 350,
+        });
+        map.add(nearestMarker);
+        // 地图自动缩放：根据两点距离计算合适zoom
         const storePos = markersRef.current[nearestIdx]?.getPosition();
         if (storePos) {
           const midLng = (pos.lng + storePos.lng) / 2;
@@ -202,21 +219,16 @@ export default function StoreMapPage() {
           const resolution = (minD * 1000) / targetPx;
           const rawZoom = Math.log2(156543.03392 * Math.cos(midLat * Math.PI / 180) / resolution);
           const finalZoom = Math.max(10, Math.min(17, Math.round(rawZoom)));
-
-          try {
-            const fz = finalZoom;
-            const mc = [midLng, midLat];
-
-            setTimeout(() => {
-              const m = mapRef.current;
-              if (!m) return;
-              m.setZoom(fz);
-              m.setCenter(mc);
-            }, 120);
-          } catch (e) {
-            console.error('[locate] setZoom ERROR', e);
-          }
+          const fz = finalZoom;
+          const mc = [midLng, midLat];
+          setTimeout(() => {
+            const m = mapRef.current;
+            if (!m) return;
+            m.setZoom(fz);
+            m.setCenter(mc);
+          }, 120);
         }
+        // 地址处弹窗
         if (!locateInfoWindowRef.current) {
           locateInfoWindowRef.current = new AMap.InfoWindow({
             isCustom: true,
@@ -224,10 +236,9 @@ export default function StoreMapPage() {
             offset: new AMap.Pixel(0, -24),
           });
         }
-        const nearestStore = STORES[nearestIdx];
         locateInfoWindowRef.current.setContent(`<div class="gs-locate-popup">最近的国色星洗门店为${nearestStore.short}，距离${minD.toFixed(1)}公里</div>`);
         locateInfoWindowRef.current.open(map, addrMarker.getPosition());
-        locateRef.current = { addrMarker, nearestIdx };
+        locateRef.current = { addrMarker, nearestMarker, nearestIdx };
       });
     });
   }, [clearLocate]);
@@ -812,6 +823,80 @@ export default function StoreMapPage() {
         }
         .gs-tag.rate .rate-star { font-size: 13px; }
 
+        /* ===== 侧边栏最近门店列表 ===== */
+        .gs-nearest-wrap {
+          margin-bottom: 14px;
+          padding-bottom: 14px;
+          border-bottom: 1px solid #e8ecf1;
+        }
+        .gs-nearest-title {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          font-weight: 700;
+          color: #1e88e5;
+          margin-bottom: 8px;
+        }
+        .gs-nearest-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 7px 8px;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: background 0.15s;
+        }
+        .gs-nearest-item:hover {
+          background: #f0f6ff;
+        }
+        .gs-nearest-item.first {
+          background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+          border: 1px solid #90caf9;
+        }
+        .gs-nearest-rank {
+          flex-shrink: 0;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: #e0e0e0;
+          color: #666;
+          font-size: 11px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .gs-nearest-rank.first {
+          background: #1e88e5;
+          color: #fff;
+        }
+        .gs-nearest-body {
+          flex: 1;
+          min-width: 0;
+        }
+        .gs-nearest-name {
+          font-size: 12.5px;
+          font-weight: 600;
+          color: #1a1a2e;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .gs-nearest-addr {
+          font-size: 11px;
+          color: #888;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          margin-top: 1px;
+        }
+        .gs-nearest-dist {
+          flex-shrink: 0;
+          font-size: 12px;
+          font-weight: 700;
+          color: #1e88e5;
+        }
         .gs-empty {
           display: flex;
           flex-direction: column;
@@ -1068,28 +1153,27 @@ export default function StoreMapPage() {
           background: #fff;
           border-radius: 50%;
         }
-        .gs-marker.locate-glow {
-          z-index: 3000 !important;
+        /* 最近门店蓝色高亮标注 — 比地址点更大，带白色数字1 */
+        .gs-nearest-pin {
+          width: 36px;
+          height: 36px;
+          background: #1e88e5;
+          border: 3px solid #fff;
+          border-radius: 50% 50% 50% 0;
+          transform: rotate(-45deg);
+          box-shadow: 0 4px 16px rgba(30, 136, 229, 0.55), 0 2px 8px rgba(0, 0, 0, 0.3);
+          position: relative;
         }
-        .gs-marker.locate-glow .pin {
-          border-color: #1e88e5 !important;
-          filter: drop-shadow(0 0 8px rgba(30, 136, 229, 0.9));
-          animation: gs-pin-glow-blue 1s ease-in-out infinite;
-        }
-        .gs-marker.locate-glow .gs-label {
-          background: #1e88e5 !important;
-          color: #ffffff !important;
-          border-color: #1565c0 !important;
-          font-weight: 700 !important;
-          box-shadow: 0 2px 10px rgba(30, 136, 229, 0.5) !important;
-        }
-        @keyframes gs-pin-glow-blue {
-          0%, 100% {
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 4px #ffffff, 0 0 0 10px rgba(30, 136, 229, 0.75), 0 0 24px rgba(30, 136, 229, 0.6);
-          }
-          50% {
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 4px #ffffff, 0 0 0 22px rgba(30, 136, 229, 0), 0 0 36px rgba(30, 136, 229, 0.3);
-          }
+        .gs-nearest-pin::after {
+          content: '1';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(45deg);
+          color: #fff;
+          font-size: 16px;
+          font-weight: 800;
+          font-family: inherit;
         }
         .gs-locate-popup {
           background: #fff;
@@ -1414,6 +1498,31 @@ export default function StoreMapPage() {
         </div>
 
         <div className="gs-list-wrap">
+          {locateResults.length > 0 && (
+            <div className="gs-nearest-wrap">
+              <div className="gs-nearest-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                距搜索地址最近
+              </div>
+              {locateResults.map((item, i) => {
+                const st = STORES[item.idx];
+                return (
+                  <div
+                    key={item.idx}
+                    className={cn('gs-nearest-item', i === 0 && 'first')}
+                    onClick={() => handleStoreClick(st, item.idx)}
+                  >
+                    <span className={cn('gs-nearest-rank', i === 0 && 'first')}>{i + 1}</span>
+                    <div className="gs-nearest-body">
+                      <div className="gs-nearest-name">{st.name}</div>
+                      <div className="gs-nearest-addr">{st.addr}</div>
+                    </div>
+                    <span className="gs-nearest-dist">{item.distance.toFixed(1)} km</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           {BRAND_ORDER.map(brand => {
             const items = filteredStores.filter(s => s.brand === brand);
             if (items.length === 0) return null;
