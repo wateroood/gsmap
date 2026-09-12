@@ -208,6 +208,8 @@ export default function StoreMapPage() {
 
   // 筛选 / 搜索变化时更新 marker 显示
   useEffect(() => {
+    if (!mapRef.current) return;
+    const map = mapRef.current;
     markersRef.current.forEach((m, idx) => {
       const store = STORES[idx];
       const brandOk = filter === 'all' || store.brand === filter;
