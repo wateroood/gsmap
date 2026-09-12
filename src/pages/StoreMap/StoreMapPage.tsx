@@ -364,10 +364,11 @@ export default function StoreMapPage() {
         .gs-brand-row {
           display: flex;
           align-items: center;
-          gap: 10px;
+          justify-content: center;
+          gap: 14px;
         }
         .gs-brand-logo {
-          height: 36px;
+          height: 42px;
           width: auto;
           flex: none;
           object-fit: contain;
@@ -414,12 +415,13 @@ export default function StoreMapPage() {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
         }
         .gs-title {
-          font-size: 20px;
+          font-size: 23px;
           font-weight: 700;
           letter-spacing: 0.5px;
           margin: 0;
           line-height: 1.2;
           color: #fff;
+          white-space: nowrap;
         }
         .gs-sub {
           font-size: 11.5px;
@@ -429,15 +431,15 @@ export default function StoreMapPage() {
         }
         .gs-stats {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 8px;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 10px;
         }
         .gs-stat {
           position: relative;
           background: rgba(255, 255, 255, 0.12);
           border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 10px;
-          padding: 8px 4px 10px;
+          padding: 10px 6px 12px;
           text-align: center;
           transition: all 0.2s;
           backdrop-filter: blur(4px);
@@ -464,7 +466,7 @@ export default function StoreMapPage() {
         }
         .gs-stat b {
           display: block;
-          font-size: 19px;
+          font-size: 21px;
           font-weight: 700;
           line-height: 1.2;
           color: #fff;
@@ -1158,7 +1160,9 @@ export default function StoreMapPage() {
           .gs-stats {
             gap: 6px;
           }
-          .gs-stat b { font-size: 16px; }
+          .gs-brand-logo { height: 34px; }
+          .gs-title { font-size: 19px; }
+          .gs-stat b { font-size: 17px; }
           .gs-stat span { font-size: 9px; }
         }
       `}</style>
