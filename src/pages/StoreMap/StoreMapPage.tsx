@@ -190,18 +190,37 @@ export default function StoreMapPage() {
         });
         map.add(addrMarker);
         document.querySelector(`.gs-marker[data-idx="${nearestIdx}"]`)?.classList.add('locate-glow');
-        // 显式构造包含地址点与最近门店点的边界并缩放，确保门店标注可见
+        // 手动计算精确 zoom 与中心：根据地图尺寸和两点距离反推，确保地址点与门店点同时清晰可见
         const storePos = markersRef.current[nearestIdx]?.getPosition();
         if (storePos) {
-          const bounds = new AMap.Bounds(
-            new AMap.LngLat(Math.min(pos.lng, storePos.lng), Math.min(pos.lat, storePos.lat)),
-            new AMap.LngLat(Math.max(pos.lng, storePos.lng), Math.max(pos.lat, storePos.lat))
-          );
-          map.setBounds(bounds, false, [120, 120, 120, 120]);
+          const midLng = (pos.lng + storePos.lng) / 2;
+          const midLat = (pos.lat + storePos.lat) / 2;
+          const mapSize = map.getSize();
+          const padding = 150;
+          const usable = Math.min(mapSize.width - padding * 2, mapSize.height - padding * 2);
+          const targetPx = Math.max(usable * 0.65, 120);
+          const resolution = (minD * 1000) / targetPx;
+          const rawZoom = Math.log2(156543.03392 * Math.cos(midLat * Math.PI / 180) / resolution);
+          const finalZoom = Math.max(10, Math.min(17, Math.round(rawZoom)));
+
+          try {
+            const fz = finalZoom;
+            const mc = [midLng, midLat];
+
+            setTimeout(() => {
+              const m = mapRef.current;
+              if (!m) return;
+              m.setZoom(fz);
+              m.setCenter(mc);
+            }, 120);
+          } catch (e) {
+            console.error('[locate] setZoom ERROR', e);
+          }
         }
         if (!locateInfoWindowRef.current) {
           locateInfoWindowRef.current = new AMap.InfoWindow({
             isCustom: true,
+            autoMove: false,
             offset: new AMap.Pixel(0, -24),
           });
         }
@@ -1049,15 +1068,27 @@ export default function StoreMapPage() {
           background: #fff;
           border-radius: 50%;
         }
+        .gs-marker.locate-glow {
+          z-index: 3000 !important;
+        }
         .gs-marker.locate-glow .pin {
-          animation: gs-pin-glow-blue 1.2s ease-in-out infinite;
+          border-color: #1e88e5 !important;
+          filter: drop-shadow(0 0 8px rgba(30, 136, 229, 0.9));
+          animation: gs-pin-glow-blue 1s ease-in-out infinite;
+        }
+        .gs-marker.locate-glow .gs-label {
+          background: #1e88e5 !important;
+          color: #ffffff !important;
+          border-color: #1565c0 !important;
+          font-weight: 700 !important;
+          box-shadow: 0 2px 10px rgba(30, 136, 229, 0.5) !important;
         }
         @keyframes gs-pin-glow-blue {
           0%, 100% {
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.95), 0 0 0 8px rgba(30, 136, 229, 0.5);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 4px #ffffff, 0 0 0 10px rgba(30, 136, 229, 0.75), 0 0 24px rgba(30, 136, 229, 0.6);
           }
           50% {
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.95), 0 0 0 15px rgba(30, 136, 229, 0.12);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 4px #ffffff, 0 0 0 22px rgba(30, 136, 229, 0), 0 0 36px rgba(30, 136, 229, 0.3);
           }
         }
         .gs-locate-popup {
