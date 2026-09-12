@@ -77,7 +77,7 @@ export default function StoreMapPage() {
 
     // 高德新版矢量电子地图（含道路、支路、水系、绿地、建筑、文字注记）
       const vectorLayer = L.tileLayer(
-        'https://wprd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=9&x={x}&y={y}&z={z}',
+        'https://wprd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
         {
           subdomains: ['1', '2', '3', '4'],
           maxZoom: 19,
