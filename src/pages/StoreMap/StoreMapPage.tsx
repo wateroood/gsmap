@@ -190,7 +190,15 @@ export default function StoreMapPage() {
         });
         map.add(addrMarker);
         document.querySelector(`.gs-marker[data-idx="${nearestIdx}"]`)?.classList.add('locate-glow');
-        map.setFitView([addrMarker, markersRef.current[nearestIdx]], false, [100, 100, 100, 100]);
+        // 显式构造包含地址点与最近门店点的边界并缩放，确保门店标注可见
+        const storePos = markersRef.current[nearestIdx]?.getPosition();
+        if (storePos) {
+          const bounds = new AMap.Bounds(
+            new AMap.LngLat(Math.min(pos.lng, storePos.lng), Math.min(pos.lat, storePos.lat)),
+            new AMap.LngLat(Math.max(pos.lng, storePos.lng), Math.max(pos.lat, storePos.lat))
+          );
+          map.setBounds(bounds, false, [120, 120, 120, 120]);
+        }
         if (!locateInfoWindowRef.current) {
           locateInfoWindowRef.current = new AMap.InfoWindow({
             isCustom: true,
