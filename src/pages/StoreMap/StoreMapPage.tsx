@@ -197,7 +197,8 @@ export default function StoreMapPage() {
             offset: new AMap.Pixel(0, -24),
           });
         }
-        locateInfoWindowRef.current.setContent(`<div class="gs-locate-popup">最近的国色星洗门店距离${minD.toFixed(1)}公里</div>`);
+        const nearestStore = STORES[nearestIdx];
+        locateInfoWindowRef.current.setContent(`<div class="gs-locate-popup">最近的国色星洗门店为${nearestStore.short}，距离${minD.toFixed(1)}公里</div>`);
         locateInfoWindowRef.current.open(map, addrMarker.getPosition());
         locateRef.current = { addrMarker, nearestIdx };
       });
