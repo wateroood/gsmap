@@ -368,7 +368,7 @@ export default function StoreMapPage() {
           gap: 14px;
         }
         .gs-brand-logo {
-          height: 42px;
+          height: 40px;
           width: auto;
           flex: none;
           object-fit: contain;
@@ -415,18 +415,19 @@ export default function StoreMapPage() {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
         }
         .gs-title {
-          font-size: 23px;
+          font-size: 21px;
           font-weight: 700;
           letter-spacing: 0.5px;
           margin: 0;
-          line-height: 1.2;
+          line-height: 1.1;
           color: #fff;
           white-space: nowrap;
         }
         .gs-sub {
-          font-size: 11.5px;
+          font-size: 10.5px;
           color: rgba(255, 255, 255, 0.75);
-          margin-top: 4px;
+          margin-top: 3px;
+          line-height: 1.3;
           letter-spacing: 0.3px;
         }
         .gs-stats {
@@ -439,7 +440,7 @@ export default function StoreMapPage() {
           background: rgba(255, 255, 255, 0.12);
           border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 10px;
-          padding: 10px 6px 12px;
+          padding: 4px 6px 5px;
           text-align: center;
           transition: all 0.2s;
           backdrop-filter: blur(4px);
@@ -466,17 +467,17 @@ export default function StoreMapPage() {
         }
         .gs-stat b {
           display: block;
-          font-size: 21px;
+          font-size: 15px;
           font-weight: 700;
-          line-height: 1.2;
+          line-height: 1.1;
           color: #fff;
           text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
         .gs-stat span {
           display: block;
-          font-size: 10px;
+          font-size: 9px;
           color: rgba(255, 255, 255, 0.85);
-          margin-top: 3px;
+          margin-top: 1px;
           letter-spacing: 0.3px;
         }
 
