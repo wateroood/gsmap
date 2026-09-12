@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronDown, ChevronUp, Search, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Search, X } from 'lucide-react';
 import { STORES, BRAND_META, BRAND_ORDER, type IStore, type BrandKey } from '@/data/stores';
 import { cn } from '@/lib/utils';
 import brandLogo from '@/assets/logo.png';
@@ -367,13 +367,36 @@ export default function StoreMapPage() {
           gap: 10px;
         }
         .gs-brand-logo {
-          height: 34px;
+          height: 36px;
           width: auto;
-          border-radius: 6px;
-          background: #fff;
           flex: none;
           object-fit: contain;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+        }
+        .gs-collapse-handle {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          left: calc(384px - 14px);
+          width: 28px;
+          height: 76px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
+          color: #fff;
+          border: none;
+          border-radius: 0 14px 14px 0;
+          cursor: pointer;
+          z-index: 20;
+          box-shadow: 3px 0 10px rgba(0, 0, 0, 0.18);
+          transition: left 0.3s ease;
+        }
+        .gs-collapse-handle:hover {
+          background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+        }
+        .gs-collapse-handle.collapsed {
+          left: 0;
         }
         .gs-brand-mark {
           width: 34px;
@@ -389,35 +412,6 @@ export default function StoreMapPage() {
           font-size: 15px;
           letter-spacing: 1px;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
-        }
-        .gs-head-collapse-btn {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          padding: 5px 10px;
-          background: rgba(255, 255, 255, 0.9);
-          color: var(--blue);
-          border: 1px solid rgba(255, 255, 255, 0.5);
-          border-radius: 8px;
-          font-size: 11.5px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
-          font-family: inherit;
-          flex: none;
-          white-space: nowrap;
-        }
-        .gs-head-collapse-btn:hover {
-          background: #fff;
-          color: #0d47a1;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        }
-        .gs-head-collapse-btn svg {
-          transition: transform 0.3s ease;
-        }
-        .gs-panel.collapsed .gs-head-collapse-btn svg {
-          transform: rotate(180deg);
         }
         .gs-title {
           font-size: 20px;
@@ -1097,7 +1091,10 @@ export default function StoreMapPage() {
             display: none;
           }
 
-        /* 移动端：面板在顶部，折叠按钮在面板底部边缘 */
+        /* 移动端：隐藏桌面端把手，使用底部折叠按钮 */
+          .gs-collapse-handle {
+            display: none;
+          }
           .gs-collapse-btn {
             display: none;
           }
@@ -1175,16 +1172,6 @@ export default function StoreMapPage() {
               <h1 className="gs-title">门店分布图</h1>
               <div className="gs-sub">Chengdu Store Locator</div>
             </div>
-            <button
-              type="button"
-              className="gs-head-collapse-btn"
-              onClick={togglePanel}
-              aria-label={panelCollapsed ? '展开面板' : '收起面板'}
-              title={panelCollapsed ? '展开面板' : '收起面板'}
-            >
-              <ChevronLeft size={14} strokeWidth={2.5} />
-              <span>{panelCollapsed ? '展开' : '收起'}</span>
-            </button>
           </div>
           <div className="gs-stats">
             <div className="gs-stat total">
@@ -1317,6 +1304,21 @@ export default function StoreMapPage() {
           )}
         </div>
       </aside>
+
+      {/* 桌面端折叠把手 — 附着在侧边栏右侧边沿，双向收起/展开 */}
+      <button
+        type="button"
+        className={cn('gs-collapse-handle', panelCollapsed && 'collapsed')}
+        onClick={togglePanel}
+        aria-label={panelCollapsed ? '展开面板' : '收起面板'}
+        title={panelCollapsed ? '展开面板' : '收起面板'}
+      >
+        {panelCollapsed ? (
+          <ChevronRight size={18} strokeWidth={2.5} />
+        ) : (
+          <ChevronLeft size={18} strokeWidth={2.5} />
+        )}
+      </button>
 
       {/* 移动端折叠按钮 — 放在面板外避免受 panel stacking context 限制 */}
       <button
