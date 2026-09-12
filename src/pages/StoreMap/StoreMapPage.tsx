@@ -153,6 +153,7 @@ export default function StoreMapPage() {
   // ===== 地址定位：匹配最近门店 =====
   const locateRef = useRef<{ addrMarker: any; nearestMarker: any; nearestIdx: number } | null>(null);
   const locateInfoWindowRef = useRef<any>(null);
+  const drivingRef = useRef<any>(null);
 
   const clearLocate = useCallback(() => {
     if (locateRef.current) {
@@ -161,6 +162,10 @@ export default function StoreMapPage() {
       locateRef.current = null;
     }
     locateInfoWindowRef.current?.close();
+    if (drivingRef.current) {
+      drivingRef.current.clear();
+      drivingRef.current = null;
+    }
     setLocateResults([]);
   }, []);
 
@@ -236,8 +241,39 @@ export default function StoreMapPage() {
             offset: new AMap.Pixel(0, -24),
           });
         }
-        locateInfoWindowRef.current.setContent(`<div class="gs-locate-popup">最近的国色星洗门店为${nearestStore.short}，距离${minD.toFixed(1)}公里</div>`);
+        locateInfoWindowRef.current.setContent(`<div class="gs-locate-popup"><div class="gs-locate-row"><span class="gs-locate-label">最近门店</span><span class="gs-locate-value">${nearestStore.short}</span></div><div class="gs-locate-row"><span class="gs-locate-label">距离</span><span class="gs-locate-value">${minD.toFixed(1)} 公里</span></div><button class="gs-locate-nav-btn" type="button">导航去门店</button></div>`);
         locateInfoWindowRef.current.open(map, addrMarker.getPosition());
+        // 绑定导航按钮点击事件
+        setTimeout(() => {
+          const btn = document.querySelector('.gs-locate-nav-btn');
+          if (btn) {
+            btn.addEventListener('click', () => {
+              const m = mapRef.current;
+              const AMap = window.AMap;
+              if (!m || !AMap) return;
+              // 清除已有路线
+              if (drivingRef.current) { drivingRef.current.clear(); }
+              AMap.plugin('AMap.Driving', () => {
+                const driving = new AMap.Driving({
+                  map: m,
+                  panel: false,
+                  hideMarkers: true,
+                  autoFitView: true,
+                });
+                drivingRef.current = driving;
+                driving.search(
+                  [pos.lng, pos.lat],
+                  [nearestStore.lng, nearestStore.lat],
+                  (status: string, result: any) => {
+                    if (status === 'complete') {
+                      locateInfoWindowRef.current?.close();
+                    }
+                  }
+                );
+              });
+            });
+          }
+        }, 50);
         locateRef.current = { addrMarker, nearestMarker, nearestIdx };
       });
     });
@@ -1177,15 +1213,50 @@ export default function StoreMapPage() {
         }
         .gs-locate-popup {
           background: #fff;
-          border-radius: 10px;
-          padding: 10px 14px;
+          border-radius: 12px;
+          padding: 12px 16px;
+          font-size: 13px;
+          color: #333;
+          box-shadow: 0 6px 24px rgba(13, 71, 161, 0.25);
+          border: 1px solid rgba(30, 136, 229, 0.2);
+          font-family: inherit;
+          min-width: 180px;
+        }
+        .gs-locate-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 4px 0;
+          gap: 16px;
+        }
+        .gs-locate-label {
+          color: #888;
+          font-weight: 500;
+          font-size: 12px;
+        }
+        .gs-locate-value {
+          color: #0d47a1;
+          font-weight: 700;
+          font-size: 13px;
+          text-align: right;
+        }
+        .gs-locate-nav-btn {
+          display: block;
+          width: 100%;
+          margin-top: 10px;
+          padding: 8px 0;
+          background: linear-gradient(135deg, #1976d2, #0d47a1);
+          color: #fff;
+          border: none;
+          border-radius: 8px;
           font-size: 13px;
           font-weight: 600;
-          color: #0d47a1;
-          white-space: nowrap;
-          box-shadow: 0 6px 20px rgba(13, 71, 161, 0.28);
-          border: 1px solid rgba(30, 136, 229, 0.25);
+          cursor: pointer;
+          transition: opacity 0.2s;
           font-family: inherit;
+        }
+        .gs-locate-nav-btn:hover {
+          opacity: 0.9;
         }
 
         /* ===== InfoWindow 样式 ===== */
