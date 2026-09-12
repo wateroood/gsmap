@@ -14,19 +14,16 @@ declare global {
 const FILTERS: { key: FilterKey; label: string; dotClass: string; activeClass: string }[] = [
   { key: 'all', label: '全部', dotClass: 'bg-[var(--ink)]', activeClass: 'bg-[var(--ink)] text-white' },
   { key: 'star', label: '国色星洗', dotClass: 'bg-[var(--red)]', activeClass: 'bg-[var(--red)] text-white' },
-  { key: 'pure', label: '国色净衣馆', dotClass: 'bg-[var(--blue)]', activeClass: 'bg-[var(--blue)] text-white' },
   { key: 'lux', label: '国色1678', dotClass: 'bg-[var(--gold)]', activeClass: 'bg-[var(--gold)] text-white' },
 ];
 
 function getBrandColor(brand: BrandKey): string {
   if (brand === 'star') return 'var(--red)';
-  if (brand === 'pure') return 'var(--blue)';
   return 'var(--gold)';
 }
 
 function getBrandPinClass(brand: BrandKey): string {
   if (brand === 'star') return 'gs-red';
-  if (brand === 'pure') return 'gs-blue';
   return 'gs-gold';
 }
 
@@ -46,7 +43,6 @@ export default function StoreMapPage() {
   const stats = useMemo(() => ({
     total: STORES.length,
     star: STORES.filter(s => s.brand === 'star').length,
-    pure: STORES.filter(s => s.brand === 'pure').length,
     lux: STORES.filter(s => s.brand === 'lux').length,
     areas: new Set(STORES.map(s => s.area)).size,
   }), []);
@@ -85,7 +81,7 @@ export default function StoreMapPage() {
   // 构建弹窗 HTML
   const buildPopupHtml = useCallback((s: IStore) => {
     const meta = BRAND_META[s.brand];
-    const brandCls = s.brand === 'star' ? 'red' : s.brand === 'pure' ? 'blue' : 'gold';
+    const brandCls = s.brand === 'star' ? 'red' : 'gold';
     const navUrl = `https://uri.amap.com/navigation?to=${s.lng},${s.lat},${encodeURIComponent(s.name)}&mode=car&policy=1&src=guose-store-map&coordinate=gaode&callnative=0`;
     return `
       <div class="gs-popup">
@@ -512,11 +508,9 @@ export default function StoreMapPage() {
         }
         .gs-filter-btn.active[data-brand='all'] { background: var(--blue); }
         .gs-filter-btn.active[data-brand='star'] { background: var(--red); }
-        .gs-filter-btn.active[data-brand='pure'] { background: var(--blue); }
         .gs-filter-btn.active[data-brand='lux'] { background: var(--gold); }
         .gs-filter-btn.active[data-brand='all'] .dot { background: #fff; }
         .gs-filter-btn.active[data-brand='star'] .dot { background: #fff; }
-        .gs-filter-btn.active[data-brand='pure'] .dot { background: #fff; }
         .gs-filter-btn.active[data-brand='lux'] .dot { background: #fff; }
         .gs-filter-btn:hover:not(.active) {
           border-color: var(--blue);
@@ -618,14 +612,12 @@ export default function StoreMapPage() {
         }
         .gs-store-item.active::before { background: var(--blue); }
         .gs-store-item.active[data-brand='star']::before { background: var(--red); }
-        .gs-store-item.active[data-brand='pure']::before { background: var(--blue); }
         .gs-store-item.active[data-brand='lux']::before { background: var(--gold); }
         .gs-store-item.active .gs-store-name {
           color: var(--blue);
           font-weight: 700;
         }
         .gs-store-item.active[data-brand='star'] .gs-store-name { color: var(--red); }
-        .gs-store-item.active[data-brand='pure'] .gs-store-name { color: var(--blue); }
         .gs-store-item.active[data-brand='lux'] .gs-store-name { color: var(--gold); }
         .gs-store-pin {
           width: 10px;
@@ -1193,10 +1185,6 @@ export default function StoreMapPage() {
               <b>{stats.star}</b>
               <span>国色星洗</span>
             </div>
-            <div className="gs-stat blue">
-              <b>{stats.pure}</b>
-              <span>净衣馆</span>
-            </div>
             <div className="gs-stat gold">
               <b>{stats.lux}</b>
               <span>1678</span>
@@ -1247,10 +1235,6 @@ export default function StoreMapPage() {
             国色星洗
           </div>
           <div className="gs-legend-item">
-            <span className="gs-legend-pin blue" />
-            国色净衣馆
-          </div>
-          <div className="gs-legend-item">
             <span className="gs-legend-pin gold" />
             国色1678
           </div>
@@ -1276,7 +1260,7 @@ export default function StoreMapPage() {
                       className={cn('gs-store-item', activeStoreIdx === idx && 'active')}
                       onClick={() => handleStoreClick(store, idx)}
                     >
-                      <span className={cn('gs-store-pin', brand === 'star' ? 'red' : brand === 'pure' ? 'blue' : 'gold')} />
+                      <span className={cn('gs-store-pin', brand === 'star' ? 'red' : 'gold')} />
                       <div className="gs-store-body">
                         <div className="gs-store-name">{store.name}</div>
                         <div className="gs-store-addr">{store.addr}</div>
