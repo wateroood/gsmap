@@ -69,6 +69,9 @@ html = re.sub(r"\{\{[^}]*\}\}", "", html)
 # 8) 清理多余的空白行
 html = re.sub(r"\n{3,}", "\n\n", html)
 
+# 9) 替换 favicon 为自定义的国色星洗 LOGO
+html = html.replace("/gsmap/favicon.svg", "/gsmap/favicon.png")
+
 with io.open(html_path, "w", encoding="utf-8") as f:
     f.write(html)
 
