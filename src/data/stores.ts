@@ -24,6 +24,7 @@ export const BRAND_ORDER: BrandKey[] = ['star', 'lux'];
 export const STORES: IStore[] = [
   // ---------- 国色星洗（33 家） ----------
   { brand: 'star', name: '国色星洗(大魔方店)', short: '大魔方店', lat: 30.573975, lng: 104.071775, addr: '科华南路1366号(心岛地铁站出入口步行350米)', area: '交子商圈', hours: '08:30-23:00', rate: 4.2 },
+  { brand: 'star', name: '国色星洗(复地金融岛店)', short: '复地金融岛店', lat: 30.573161, lng: 104.076489, addr: '环岛路1288号复地金融岛', area: '交子商圈', hours: '08:30-20:00', rate: null },
   { brand: 'star', name: '国色星洗(润富国际店)', short: '润富国际店', lat: 30.584765, lng: 104.048608, addr: '锦晖西二街333号', area: '石羊场', hours: '08:30-20:00', rate: 4.3 },
   { brand: 'star', name: '国色星洗(锦城大道店)', short: '锦城大道店', lat: 30.57566, lng: 104.049002, addr: '锦城大道1264号(锦城大道地铁站D口步行160米)', area: '石羊场', hours: '08:30-20:00', rate: 3.9 },
   { brand: 'star', name: '国色星洗(高攀路店)', short: '高攀路店', lat: 30.617522, lng: 104.080547, addr: '飞云三巷38-40号1层', area: '桂溪', hours: '08:30-20:00', rate: 4.4 },
