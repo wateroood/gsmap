@@ -1,109 +1,71 @@
-# 项目技术规范
+# 国色星洗门店分布图
+
+成都市区「国色星洗 / 国色1678」门店分布地图。基于高德地图 JS API 2.0（矢量渲染，最大缩放级别 zoom 20，约 10 米级），支持门店检索、分类筛选、点击定位与一键导航。
+
+## 在线访问
+
+- GitHub Pages：<https://wateroood.github.io/guose-store-map/>
+
+## 功能特性
+
+- 高德矢量底图，缩放可达 zoom 20（约 10 米级，与官网一致）
+- 56 家门店（国色星洗 52 家 + 国色1678 4 家）自动带名称标签
+- 左侧边栏：门店总数统计、品牌筛选（全部 / 国色星洗 / 国色1678）、关键字模糊搜索
+- 点击列表项或地图标记：定位地图并弹出详情，含「导航到这里」直达
+- 侧边栏可折叠/展开
+- 响应式适配桌面与移动端
+
+## 门店数据
+
+- 门店名称、地址、坐标（GCC-02 坐标系）、营业时间、商圈、评分均来源于公开渠道核验与人工确认，与线上版本保持一致
+- 品牌口径：国色星洗（含原国色净衣馆已并入）+ 国色1678 保留
 
 ## 技术栈
 
-- 前端: React 19 + TypeScript
-- 样式: Tailwind CSS v4
-- UI 组件: shadcn/ui `import { Button } from "@/components/ui/button";`
-- 图标: lucide-react `import { SearchIcon } from "lucide-react";`
-- 图表: echarts-for-react `import ReactECharts from "echarts-for-react";`
-- 动画: framer-motion `import { motion } from "framer-motion";`
-- 路由: react-router-dom `import { Link, useNavigate } from "react-router-dom";`
+React 19 + TypeScript 5.9 + Vite 8 + Tailwind CSS 4 + 高德地图 JS API 2.0
 
----
+> 说明：本仓库源码源自妙搭（feishu.cn 低代码平台）应用导出，已去除平台运行时依赖（AppContainer / 平台埋点 / 模板变量），可直接以静态站点部署。
+
+## 本地开发
+
+```bash
+npm install
+npm run dev
+```
+
+## 本地构建
+
+```bash
+# 标准静态构建（产物在 dist/）
+npx vite build --outDir dist --emptyOutDir
+
+# 清理产物中的平台模板变量（GitHub Pages 部署必需）
+python scripts/clean-html.py
+```
+
+> Windows 下如遇 `Cannot find native binding` 报错（npm optional 依赖 bug），补齐原生绑定后重新构建：
+> `npm install @rolldown/binding-win32-x64-msvc lightningcss-win32-x64-msvc @tailwindcss/oxide-win32-x64-msvc --no-save`
+
+## 部署（GitHub Pages）
+
+已配置 `base: '/guose-store-map/'`，使用 HashRouter 路由，无服务器重写要求。
+
+1. 源码推送到 `main` 分支
+2. 将 `dist/` 构建产物推送到 `gh-pages` 分支
+3. 仓库 Settings → Pages → Source 选择 `gh-pages` 分支 / root
+
+## 高德地图 Key 说明
+
+- 地图 Key 与安全密钥配置于 `index.html`
+- 高德开放平台控制台需将域名 `wateroood.github.io` 加入该 Key 的「域名白名单」，否则地图无法加载（报 INVALID_USER_DOMAIN）
+- 线上版本（妙搭 aiforce.cloud）与 GitHub Pages 为同一 Key，均已配置对应白名单
 
 ## 目录结构
 
 ```
 src/
-├── index.tsx            # 入口（勿修改）
-├── app.tsx              # 路由配置（仅在 <Routes> 内增删 <Route>）
-├── index.css            # 全局样式 + 主题变量
-├── components/          # 基础 UI 组件（禁止存放业务组件）
-│   ├── layout.tsx       # 全局布局容器（含 <Outlet />）
-│   └── ui/              # shadcn/ui 内置组件（勿修改）
-├── pages/               # 页面模块（每个页面一个目录）
-│   ├── <PageName>/      # 页面目录示例
-│   │   ├── PageName.tsx        # 页面入口文件与目录同名
-│   │   └── components/         # 页面专属组件
-│   └── NotFoundPage/
-│       └── NotFoundPage.tsx
-├── hooks/               # 自定义 Hooks
-└── lib/                 # 工具函数（cn() 等）
-
-shared/
-└── static/              # 静态资源
-    ├── data/            # 数据文件（JSON）
-    └── images/          # 图片资源
+  pages/StoreMap/StoreMapPage.tsx   # 门店地图主页面（唯一业务页）
+  data/stores.ts                    # 门店数据
+scripts/
+  clean-html.py                     # 构建产物模板变量清理脚本
 ```
-
----
-
-## 模板初始状态
-
-- `app.tsx` 首页路由指向平台内置的 `<Welcome />` 组件
-- 开发时需将 `index` 路由替换为业务首页，并在 `pages/` 下创建对应页面目录
-- `layout.tsx` 为空壳容器（仅 `<Outlet />`），需根据需求实现导航和布局
-
----
-
-## 禁止修改的文件
-
-| 文件 | 原因 |
-|------|------|
-| `src/index.tsx` | Provider 层级 + 样式引入，由模板管理 |
-| `src/components/ui/*` | shadcn/ui 内置组件，版本锁定 |
-
----
-
-## 文件放置规则
-
-| 内容类型 | 放置位置 |
-|---------|---------|
-| 新页面 | `src/pages/<PageName>/PageName.tsx` |
-| 页面专属组件 | `src/pages/<PageName>/components/` |
-| 自定义 Hooks | `src/hooks/` |
-| 工具函数 | `src/lib/` |
-| 静态数据文件 | `shared/static/data/` |
-| 静态图片 | `shared/static/images/` |
-
----
-
-## 导入路径
-
-```typescript
-// @/ 别名 → src/
-import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
-
-// @shared/ 别名 → shared/
-import heroImage from "@shared/static/images/hero.png";
-import configData from "@shared/static/config.json";
-```
-
----
-
-## 路由配置
-
-- 新增页面需在 `src/app.tsx` 的 `<Routes>` 内注册 `<Route>`
-- `BrowserRouter` 已在 `index.tsx` 中配置，`app.tsx` 中**禁止**再包裹 Router
-
----
-
-## 主题变量
-
-主题色定义在 `src/index.css`，通过 `:root` CSS 变量 + `@theme inline` 注册到 Tailwind。
-
-| 用途 | Tailwind 类 | CSS 变量 |
-|------|------------|----------|
-| 页面背景 | `bg-background` | `--background` |
-| 主文本 | `text-foreground` | `--foreground` |
-| 卡片背景 | `bg-card` | `--card` |
-| 次要文本 | `text-muted-foreground` | `--muted-foreground` |
-| 主色 | `bg-primary` / `text-primary` | `--primary` |
-| 强调色 | `bg-accent` | `--accent` |
-| 边框 | `border-border` | `--border` |
-| 危险色 | `text-destructive` | `--destructive` |
-| 图表色 | `bg-chart-1` ~ `bg-chart-5` | `--chart-1` ~ `--chart-5` |
-
-HSL 格式使用**空格分隔**：`--primary: hsl(150 60% 40%);`
