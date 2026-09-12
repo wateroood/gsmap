@@ -368,7 +368,7 @@ export default function StoreMapPage() {
           gap: 14px;
         }
         .gs-brand-logo {
-          height: 44px;
+          height: 50px;
           width: auto;
           flex: none;
           object-fit: contain;
@@ -440,7 +440,7 @@ export default function StoreMapPage() {
           background: rgba(255, 255, 255, 0.12);
           border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 10px;
-          padding: 4px 6px 5px;
+          padding: 5px 6px 6px;
           text-align: center;
           transition: all 0.2s;
           backdrop-filter: blur(4px);
@@ -477,7 +477,7 @@ export default function StoreMapPage() {
           display: block;
           font-size: 9px;
           color: rgba(255, 255, 255, 0.85);
-          margin-top: 1px;
+          margin-top: 2px;
           letter-spacing: 0.3px;
         }
 
