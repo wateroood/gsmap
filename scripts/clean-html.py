@@ -53,11 +53,11 @@ repl = {
     "{{tenantId}}": "",
     "{{csrfToken}}": "",
     "{{environment}}": "online",
-    "{{basename}}": "/guose-store-map/",
+    "{{basename}}": "/gsmap/",
     "{{appName}}": "国色星洗门店分布图",
     "{{appDescription}}": "国色星洗成都门店分布地图",
-    "{{appAvatar}}": "/guose-store-map/favicon.svg",
-    "{{appAvatar}}": "/guose-store-map/favicon.svg",
+    "{{appAvatar}}": "/gsmap/favicon.svg",
+    "{{appAvatar}}": "/gsmap/favicon.svg",
     "{{appDescription}}": "国色星洗成都门店分布地图",
 }
 for k, v in repl.items():

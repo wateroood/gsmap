@@ -2,7 +2,7 @@ import path from 'path'
 import { defineConfig } from '@lark-apaas/coding-preset-vite-react'
 
 export default defineConfig({
-  base: '/guose-store-map/',
+  base: '/gsmap/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),

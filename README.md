@@ -4,7 +4,7 @@
 
 ## 在线访问
 
-- GitHub Pages：<https://wateroood.github.io/guose-store-map/>
+- GitHub Pages：<https://wateroood.github.io/gsmap/>
 
 ## 功能特性
 
@@ -48,7 +48,7 @@ python scripts/clean-html.py
 
 ## 部署（GitHub Pages）
 
-已配置 `base: '/guose-store-map/'`，使用 HashRouter 路由，无服务器重写要求。
+已配置 `base: '/gsmap/'`，使用 HashRouter 路由，无服务器重写要求。
 
 1. 源码推送到 `main` 分支
 2. 将 `dist/` 构建产物推送到 `gh-pages` 分支
