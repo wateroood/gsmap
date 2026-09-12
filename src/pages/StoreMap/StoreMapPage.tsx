@@ -257,16 +257,31 @@ export default function StoreMapPage() {
                 const driving = new AMap.Driving({
                   map: m,
                   panel: false,
-                  hideMarkers: true,
-                  autoFitView: true,
+                  hideMarkers: false,
+                  autoFitView: false,
                 });
                 drivingRef.current = driving;
                 driving.search(
                   [pos.lng, pos.lat],
                   [nearestStore.lng, nearestStore.lat],
                   (status: string, result: any) => {
-                    if (status === 'complete') {
-                      locateInfoWindowRef.current?.close();
+                    if (status === 'complete' && result.routes?.length) {
+                      // 自动缩放到路线范围
+                      const route = result.routes[0];
+                      const steps = route.steps || [];
+                      if (steps.length) {
+                        const allPath = [];
+                        steps.forEach((step: any) => {
+                          if (step.path) allPath.push(...step.path);
+                        });
+                        if (allPath.length) {
+                          m.setFitView([new AMap.Polyline({ path: allPath })], false, [80, 80, 80, 80]);
+                        }
+                      }
+                      // 更新弹窗内容为导航信息
+                      const distKm = (route.distance / 1000).toFixed(1);
+                      const durMin = Math.round(route.time / 60);
+                      locateInfoWindowRef.current?.setContent(`<div class="gs-locate-popup"><div class="gs-locate-row"><span class="gs-locate-label">目的地</span><span class="gs-locate-value">${nearestStore.short}</span></div><div class="gs-locate-row"><span class="gs-locate-label">驾车距离</span><span class="gs-locate-value">${distKm} 公里</span></div><div class="gs-locate-row"><span class="gs-locate-label">预计用时</span><span class="gs-locate-value">${durMin} 分钟</span></div><button class="gs-locate-nav-btn gs-locate-nav-btn-secondary" type="button" onclick="window.open('https://uri.amap.com/navigation?to=${nearestStore.lng},${nearestStore.lat},${encodeURIComponent(nearestStore.name)}&mode=car&policy=1&src=mypage&coordinate=gaode&callnative=1','_blank')">打开高德导航</button></div>`);
                     }
                   }
                 );
@@ -1257,6 +1272,10 @@ export default function StoreMapPage() {
         }
         .gs-locate-nav-btn:hover {
           opacity: 0.9;
+        }
+        .gs-locate-nav-btn-secondary {
+          background: linear-gradient(135deg, #43a047, #2e7d32);
+          margin-top: 8px;
         }
 
         /* ===== InfoWindow 样式 ===== */
