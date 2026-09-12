@@ -157,14 +157,27 @@ export default function StoreMapPage() {
     }
 
     try {
+      const vectorLayer = new AMap.TileLayer({
+        tileSize: 256,
+        mapStyle: 'amap://styles/normal',
+        zIndex: 1,
+      });
+
       const map = new AMap.Map(mapContainerRef.current, {
         viewMode: '2D',
         zoom: 11,
+        zooms: [3, 20],
         center: [104.070, 30.585],
         resizeEnable: true,
-        mapStyle: 'amap://styles/normal',
+        layers: [vectorLayer],
         features: ['bg', 'road', 'building', 'point'],
       });
+
+      // 比例尺控件
+      AMap.Scale && new AMap.Scale({
+        position: 'LB',
+        offset: [16, 16],
+      }).addTo(map);
 
       // 隐藏高德默认的logo和版权（如果需要）
       // 高德JS API 2.0 中 Logo 默认显示在左下角，按规定保留
