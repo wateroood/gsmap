@@ -1162,7 +1162,7 @@ export default function StoreMapPage() {
           <div className="gs-brand-row">
             <div className="gs-brand-mark">国</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <h1 className="gs-title">国色洗染 · 成都门店分布</h1>
+              <h1 className="gs-title">国色星洗门店分布图</h1>
               <div className="gs-sub">Chengdu Store Locator</div>
             </div>
             <button
