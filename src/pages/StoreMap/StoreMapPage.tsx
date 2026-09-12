@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronDown, ChevronUp, Search, X } from 'lucide-react';
 import { STORES, BRAND_META, BRAND_ORDER, type IStore, type BrandKey } from '@/data/stores';
 import { cn } from '@/lib/utils';
+import brandLogo from '@/assets/logo.png';
 
 type FilterKey = 'all' | BrandKey;
 
@@ -364,6 +365,15 @@ export default function StoreMapPage() {
           display: flex;
           align-items: center;
           gap: 10px;
+        }
+        .gs-brand-logo {
+          height: 34px;
+          width: auto;
+          border-radius: 6px;
+          background: #fff;
+          flex: none;
+          object-fit: contain;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.18);
         }
         .gs-brand-mark {
           width: 34px;
@@ -1160,9 +1170,9 @@ export default function StoreMapPage() {
       <aside className={cn('gs-panel', panelCollapsed && 'collapsed')}>
         <div className="gs-panel-head">
           <div className="gs-brand-row">
-            <div className="gs-brand-mark">国</div>
+            <img src={brandLogo} alt="国色星洗" className="gs-brand-logo" />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <h1 className="gs-title">国色星洗门店分布图</h1>
+              <h1 className="gs-title">门店分布图</h1>
               <div className="gs-sub">Chengdu Store Locator</div>
             </div>
             <button
