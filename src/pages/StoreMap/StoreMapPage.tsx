@@ -339,8 +339,8 @@ export default function StoreMapPage() {
 
         /* ===== 左侧面板 ===== */
         .gs-panel {
-          width: 384px;
-          min-width: 384px;
+          width: 340px;
+          min-width: 340px;
           height: 100%;
           display: flex;
           flex-direction: column;
@@ -350,7 +350,7 @@ export default function StoreMapPage() {
           transition: margin-left 0.3s ease, width 0.3s ease, min-width 0.3s ease;
         }
         .gs-panel.collapsed {
-          margin-left: -384px;
+          margin-left: -340px;
         }
 
         .gs-panel-head {
@@ -365,10 +365,10 @@ export default function StoreMapPage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 14px;
+          gap: 12px;
         }
         .gs-brand-logo {
-          height: 50px;
+          height: 44px;
           width: auto;
           flex: none;
           object-fit: contain;
@@ -378,7 +378,7 @@ export default function StoreMapPage() {
           position: absolute;
           top: 50%;
           transform: translateY(-50%);
-          left: calc(384px - 14px);
+          left: calc(340px - 14px);
           width: 28px;
           height: 76px;
           display: flex;
@@ -415,7 +415,7 @@ export default function StoreMapPage() {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
         }
         .gs-title {
-          font-size: 21px;
+          font-size: 20px;
           font-weight: 700;
           letter-spacing: 0.5px;
           margin: 0;
@@ -424,7 +424,7 @@ export default function StoreMapPage() {
           white-space: nowrap;
         }
         .gs-sub {
-          font-size: 10.5px;
+          font-size: 9.5px;
           color: rgba(255, 255, 255, 0.75);
           margin-top: 3px;
           line-height: 1.3;
@@ -433,7 +433,7 @@ export default function StoreMapPage() {
         .gs-stats {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 10px;
+          gap: 8px;
         }
         .gs-stat {
           position: relative;
