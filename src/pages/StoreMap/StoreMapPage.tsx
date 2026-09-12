@@ -1,11 +1,15 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Search, X } from 'lucide-react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { ChevronLeft, ChevronDown, ChevronUp, Search, X } from 'lucide-react';
 import { STORES, BRAND_META, BRAND_ORDER, type IStore, type BrandKey } from '@/data/stores';
 import { cn } from '@/lib/utils';
 
 type FilterKey = 'all' | BrandKey;
+
+declare global {
+  interface Window {
+    AMap: any;
+  }
+}
 
 const FILTERS: { key: FilterKey; label: string; dotClass: string; activeClass: string }[] = [
   { key: 'all', label: '全部', dotClass: 'bg-[var(--ink)]', activeClass: 'bg-[var(--ink)] text-white' },
@@ -28,13 +32,16 @@ function getBrandPinClass(brand: BrandKey): string {
 
 export default function StoreMapPage() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<L.Marker[]>([]);
+  const mapRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
+  const infoWindowRef = useRef<any>(null);
   const [filter, setFilter] = useState<FilterKey>('all');
   const [keyword, setKeyword] = useState('');
   const [panelCollapsed, setPanelCollapsed] = useState(false);
   const [activeStoreIdx, setActiveStoreIdx] = useState<number | null>(null);
   const [mobileListOpen, setMobileListOpen] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const stats = useMemo(() => ({
     total: STORES.length,
@@ -62,154 +69,168 @@ export default function StoreMapPage() {
   const hasFilter = filter !== 'all' || keyword.trim() !== '';
   const tipSuffix = '家门店 · 点击列表可定位';
 
+  // 构建图钉 HTML
+  const buildMarkerHtml = useCallback((s: IStore) => {
+    const color = getBrandColor(s.brand);
+    return `
+      <div class="gs-marker ${getBrandPinClass(s.brand)}">
+        <div class="pin" style="--pin-color:${color}">
+          <div class="pin-inner"></div>
+        </div>
+        <div class="gs-label">${s.short}</div>
+      </div>
+    `;
+  }, []);
+
+  // 构建弹窗 HTML
+  const buildPopupHtml = useCallback((s: IStore) => {
+    const meta = BRAND_META[s.brand];
+    const brandCls = s.brand === 'star' ? 'red' : s.brand === 'pure' ? 'blue' : 'gold';
+    const navUrl = `https://uri.amap.com/navigation?to=${s.lng},${s.lat},${encodeURIComponent(s.name)}&mode=car&policy=1&src=guose-store-map&coordinate=gaode&callnative=0`;
+    return `
+      <div class="gs-popup">
+        <div class="gs-popup-head">
+          <div class="gs-popup-name">${s.name}</div>
+          <span class="gs-popup-brand brand-${brandCls}">${meta.label}</span>
+        </div>
+        <div class="gs-popup-addr">${s.addr}</div>
+        <div class="gs-popup-meta">
+          <span class="gs-tag">商圈 · ${s.area}</span>
+          <span class="gs-tag hours-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>${s.hours}</span>
+          <span class="gs-tag rate-tag"><span style="font-size:11px;">★</span>${s.rate !== null ? s.rate.toFixed(1) + ' 分' : '暂无评分'}</span>
+        </div>
+        <a class="gs-nav-btn" href="${navUrl}" target="_blank" rel="noopener noreferrer">
+          <span class="gs-nav-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+          </span>
+          导航到这里
+        </a>
+      </div>
+    `;
+  }, []);
+
+  // 清除所有 marker 的 active 态
+  const clearAllActive = useCallback(() => {
+    markersRef.current.forEach(m => {
+      const el = m.getContentElement?.() || m.getDom?.();
+      if (el) el.querySelector('.gs-marker')?.classList.remove('active');
+    });
+  }, []);
+
+  // 高亮指定 marker
+  const highlightMarker = useCallback((idx: number) => {
+    clearAllActive();
+    const marker = markersRef.current[idx];
+    if (!marker) return;
+    const el = marker.getContentElement?.() || marker.getDom?.();
+    if (el) el.querySelector('.gs-marker')?.classList.add('active');
+  }, [clearAllActive]);
+
+  // 打开指定门店的弹窗
+  const openInfoWindow = useCallback((idx: number) => {
+    const map = mapRef.current;
+    const marker = markersRef.current[idx];
+    const store = STORES[idx];
+    if (!map || !marker || !store) return;
+
+    if (!infoWindowRef.current) {
+      infoWindowRef.current = new window.AMap.InfoWindow({
+        isCustom: true,
+        offset: new window.AMap.Pixel(0, -56),
+      });
+    }
+
+    infoWindowRef.current.setContent(buildPopupHtml(store));
+    infoWindowRef.current.open(map, marker.getPosition());
+    highlightMarker(idx);
+    setActiveStoreIdx(idx);
+  }, [buildPopupHtml, highlightMarker]);
+
   // 初始化地图
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
-    const map = L.map(mapContainerRef.current, {
-      center: [30.585, 104.070],
-      zoom: 11,
-      zoomControl: false,
-      attributionControl: true,
-    });
+    const AMap = window.AMap;
+    if (!AMap) {
+      setLoadError('高德 JS API 加载失败，请检查网络或 Key 配置');
+      return;
+    }
 
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-    // 高德新版矢量电子地图（含道路、支路、水系、绿地、建筑、文字注记）
-      const vectorLayer = L.tileLayer(
-        'https://wprd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
-        {
-          subdomains: ['1', '2', '3', '4'],
-          maxZoom: 18,
-          attribution: '&copy; 高德地图',
-        }
-      );
-      vectorLayer.addTo(map);
-
-      // 瓦片加载失败时回退到 OSM
-      let tileFailCount = 0;
-      const fallbackToOSM = () => {
-        if (tileFailCount > 15) return;
-        tileFailCount++;
-        if (tileFailCount === 15) {
-          map.removeLayer(vectorLayer);
-          L.tileLayer(
-            'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            {
-              maxZoom: 19,
-              attribution: '&copy; OpenStreetMap contributors',
-            }
-          ).addTo(map);
-        }
-      };
-      vectorLayer.on('tileerror', fallbackToOSM);
-
-    // 创建 Marker
-    const markers: L.Marker[] = [];
-    STORES.forEach((s, idx) => {
-      const color = getBrandColor(s.brand);
-      const icon = L.divIcon({
-        className: '',
-        html: `
-          <div class="gs-marker ${getBrandPinClass(s.brand)}">
-            <div class="pin" style="--pin-color:${color}">
-              <div class="pin-inner"></div>
-            </div>
-            <div class="gs-label">${s.short}</div>
-          </div>
-        `,
-        iconSize: [140, 64],
-        iconAnchor: [20, 54],
-        popupAnchor: [0, -52],
+    try {
+      const map = new AMap.Map(mapContainerRef.current, {
+        viewMode: '2D',
+        zoom: 11,
+        center: [104.070, 30.585],
+        resizeEnable: true,
+        mapStyle: 'amap://styles/normal',
+        features: ['bg', 'road', 'building', 'point'],
       });
 
-      const marker = L.marker([s.lat, s.lng], { icon, title: s.name });
-      const meta = BRAND_META[s.brand];
-      const brandCls = s.brand === 'star' ? 'red' : s.brand === 'pure' ? 'blue' : 'gold';
+      // 隐藏高德默认的logo和版权（如果需要）
+      // 高德JS API 2.0 中 Logo 默认显示在左下角，按规定保留
 
-      // 弹窗内容（含导航按钮）
-      const navUrl = `https://uri.amap.com/navigation?to=${s.lng},${s.lat},${encodeURIComponent(s.name)}&mode=car&policy=1&src=guose-store-map&coordinate=gaode&callnative=0`;
-      const popupContent = `
-        <div class="gs-popup">
-          <div class="gs-popup-head">
-            <div class="gs-popup-name">${s.name}</div>
-            <span class="gs-popup-brand brand-${brandCls}">${meta.label}</span>
-          </div>
-          <div class="gs-popup-addr">${s.addr}</div>
-          <div class="gs-popup-meta">
-            <span class="gs-tag">商圈 · ${s.area}</span>
-            <span class="gs-tag hours-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>${s.hours}</span>
-            <span class="gs-tag rate-tag"><span style="font-size:11px;">★</span>${s.rate !== null ? s.rate.toFixed(1) + ' 分' : '暂无评分'}</span>
-          </div>
-          <a class="gs-nav-btn" href="${navUrl}" target="_blank" rel="noopener noreferrer">
-            <span class="gs-nav-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
-            </span>
-            导航到这里
-          </a>
-        </div>
-      `;
-
-      marker.bindPopup(popupContent, {
-        closeButton: false,
-        maxWidth: 280,
-        minWidth: 260,
-        className: 'gs-popup-container',
-      });
-
-      marker.on('click', () => {
-        marker.openPopup();
-        // 清除其他 marker 的 active
-        markers.forEach(m => {
-          const el = m.getElement();
-          if (el) el.querySelector('.gs-marker')?.classList.remove('active');
+      // 创建 Marker
+      const markers: any[] = [];
+      STORES.forEach((s, idx) => {
+        const marker = new AMap.Marker({
+          position: [s.lng, s.lat],
+          content: buildMarkerHtml(s),
+          anchor: 'bottom-center',
+          offset: new AMap.Pixel(0, 0),
+          zIndex: 100,
         });
-        // 当前 marker 加 active（glow色通过CSS变量在pin上继承）
-        const markerEl = marker.getElement();
-        const markerInner = markerEl?.querySelector('.gs-marker');
-        if (markerInner) markerInner.classList.add('active');
-        setActiveStoreIdx(idx);
+
+        marker.on('click', () => {
+          openInfoWindow(idx);
+        });
+
+        (marker as any).storeIdx = idx;
+        markers.push(marker);
       });
 
-      (marker as any).storeIdx = idx;
-      markers.push(marker);
-    });
+      map.add(markers);
 
-    L.layerGroup(markers).addTo(map);
+      // 自动适配边界
+      const positions = markers.map((m: any) => m.getPosition());
+      if (positions.length > 0) {
+        map.setFitView(markers, false, [80, 80, 80, 80]);
+      }
 
-    // 自动适配边界
-    const bounds = L.latLngBounds(markers.map(m => m.getLatLng()));
-    map.fitBounds(bounds.pad(0.12));
+      // 关闭弹窗时清除 active
+      map.on('click', () => {
+        infoWindowRef.current?.close();
+        clearAllActive();
+        setActiveStoreIdx(null);
+      });
 
-    // 缩放控制标签密度
-    const updateLabelDensity = () => {
-      document.body.classList.toggle('map-zoom-low', map.getZoom() < 12);
-    };
-    map.on('zoomend', updateLabelDensity);
-    updateLabelDensity();
+      mapRef.current = map;
+      markersRef.current = markers;
+      setMapReady(true);
 
-    mapRef.current = map;
-    markersRef.current = markers;
-
-    return () => {
-      map.remove();
-      mapRef.current = null;
-      markersRef.current = [];
-    };
-  }, []);
+      return () => {
+        map.destroy();
+        mapRef.current = null;
+        markersRef.current = [];
+        infoWindowRef.current = null;
+      };
+    } catch (e: any) {
+      setLoadError(`地图初始化失败：${e?.message || String(e)}`);
+    }
+  }, [buildMarkerHtml, clearAllActive, openInfoWindow]);
 
   // 面板折叠时地图重算尺寸
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    const timer = setTimeout(() => map.invalidateSize(), 300);
+    const timer = setTimeout(() => {
+      map.resize();
+    }, 310);
     return () => clearTimeout(timer);
-   }, [panelCollapsed]);
+  }, [panelCollapsed]);
 
   // 筛选 / 搜索变化时更新 marker 显示
   useEffect(() => {
-    if (!mapRef.current) return;
-    const map = mapRef.current;
+    if (!mapRef.current || !mapReady) return;
     markersRef.current.forEach((m, idx) => {
       const store = STORES[idx];
       const brandOk = filter === 'all' || store.brand === filter;
@@ -219,13 +240,19 @@ export default function StoreMapPage() {
         store.short.toLowerCase().includes(kw) ||
         store.addr.toLowerCase().includes(kw) ||
         store.area.toLowerCase().includes(kw);
-       const show = brandOk && kwOk;
-       const el = m.getElement();
-       if (el) el.style.display = show ? 'block' : 'none';
-       if (!show) m.closePopup();
+      const show = brandOk && kwOk;
+      if (show) {
+        m.show();
+      } else {
+        m.hide();
+      }
     });
+    // 关闭弹窗
+    if (infoWindowRef.current && mapRef.current) {
+      infoWindowRef.current.close();
+    }
     setActiveStoreIdx(null);
-  }, [filter, kw]);
+  }, [filter, kw, mapReady]);
 
   // 点击列表项定位到门店
   const handleStoreClick = (store: IStore, idx: number) => {
@@ -234,18 +261,14 @@ export default function StoreMapPage() {
     if (!map || !marker) return;
 
     setActiveStoreIdx(idx);
+    highlightMarker(idx);
 
-    // 清除其他 marker 的 active，给当前加 active
-    markersRef.current.forEach(m => {
-      const el = m.getElement();
-      if (el) el.querySelector('.gs-marker')?.classList.remove('active');
-    });
-    const markerEl = marker.getElement();
-    const markerInner = markerEl?.querySelector('.gs-marker');
-    if (markerInner) markerInner.classList.add('active');
+    const currentZoom = map.getZoom();
+    const targetZoom = Math.max(currentZoom, 15);
+    map.setZoomAndCenter(targetZoom, [store.lng, store.lat], false, 600);
 
-    map.flyTo([store.lat, store.lng], Math.max(map.getZoom(), 15), { duration: 0.6 });
-    setTimeout(() => marker.openPopup(), 650);
+    // 延迟打开弹窗，等地图动画结束
+    setTimeout(() => openInfoWindow(idx), 650);
 
     // 移动端点击后收起列表
     if (window.innerWidth < 768) {
@@ -257,6 +280,19 @@ export default function StoreMapPage() {
   const togglePanel = () => {
     setPanelCollapsed(v => !v);
   };
+
+  if (loadError) {
+    return (
+      <div className="gs-app">
+        <div className="gs-map-wrap flex items-center justify-center">
+          <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md">
+            <h2 className="text-lg font-bold text-red-600 mb-2">地图加载失败</h2>
+            <p className="text-sm text-gray-600">{loadError}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="gs-app">
@@ -546,8 +582,6 @@ export default function StoreMapPage() {
           cursor: pointer;
           transition: all 0.15s;
           border: 1px solid transparent;
-        }
-        .gs-store-item {
           position: relative;
         }
         .gs-store-item::before {
@@ -825,6 +859,7 @@ export default function StoreMapPage() {
           align-items: center;
           line-height: 1;
           transition: transform 0.25s ease;
+          pointer-events: auto;
         }
         .gs-marker .pin {
           width: 30px;
@@ -857,7 +892,6 @@ export default function StoreMapPage() {
           0%, 100% { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.9), 0 0 0 7px var(--pin-glow, rgba(21, 101, 192, 0.4)); }
           50% { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.95), 0 0 0 12px var(--pin-glow, rgba(21, 101, 192, 0.15)); }
         }
-        }
         .gs-marker .pin-inner {
           position: absolute;
           top: 50%;
@@ -886,27 +920,37 @@ export default function StoreMapPage() {
           transform: scale(1.05);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
         }
-        /* 缩放级别低时淡化标签 */
-        .map-zoom-low .gs-marker .gs-label {
-          opacity: 0.35;
-        }
 
-        /* ===== Popup 样式 ===== */
-        .gs-popup-container .leaflet-popup-content-wrapper {
-          border-radius: 12px;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-          padding: 0;
+        /* ===== InfoWindow 样式 ===== */
+        .amap-info-content {
+          padding: 0 !important;
+          background: transparent !important;
         }
-        .gs-popup-container .leaflet-popup-content {
-          margin: 0;
-          width: 260px !important;
+        .amap-info-close {
+          display: none;
         }
-        .gs-popup-container .leaflet-popup-tip {
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        .amap-info-sharp {
+          display: none;
         }
         .gs-popup {
           padding: 14px 16px;
           font-family: inherit;
+          background: #fff;
+          border-radius: 12px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+          width: 260px;
+          position: relative;
+        }
+        .gs-popup::after {
+          content: '';
+          position: absolute;
+          bottom: -8px;
+          left: 50%;
+          transform: translateX(-50%) rotate(45deg);
+          width: 16px;
+          height: 16px;
+          background: #fff;
+          box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.06);
         }
         .gs-popup-head {
           display: flex;
@@ -971,8 +1015,6 @@ export default function StoreMapPage() {
           color: var(--blue);
         }
 
-        .leaflet-popup-content .gs-nav-btn,
-        .gs-popup .gs-nav-btn,
         .gs-nav-btn {
           display: flex !important;
           align-items: center;
@@ -991,18 +1033,15 @@ export default function StoreMapPage() {
           border: none;
           cursor: pointer;
         }
-        .leaflet-popup-content .gs-nav-btn:visited,
         .gs-nav-btn:visited {
           color: #fff !important;
         }
-        .leaflet-popup-content .gs-nav-btn:hover,
         .gs-nav-btn:hover {
           background: #0d47a1 !important;
           color: #fff !important;
           transform: translateY(-2px);
           box-shadow: 0 6px 16px rgba(21, 101, 192, 0.45);
         }
-        .leaflet-popup-content .gs-nav-btn:active,
         .gs-nav-btn:active {
           color: #fff !important;
           transform: translateY(0);
@@ -1302,5 +1341,3 @@ export default function StoreMapPage() {
     </div>
   );
 }
-
-
