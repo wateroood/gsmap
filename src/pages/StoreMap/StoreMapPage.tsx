@@ -339,8 +339,8 @@ export default function StoreMapPage() {
 
         /* ===== 左侧面板 ===== */
         .gs-panel {
-          width: 255px;
-          min-width: 255px;
+          width: 280px;
+          min-width: 280px;
           height: 100%;
           display: flex;
           flex-direction: column;
@@ -350,7 +350,7 @@ export default function StoreMapPage() {
           transition: margin-left 0.3s ease, width 0.3s ease, min-width 0.3s ease;
         }
         .gs-panel.collapsed {
-          margin-left: -255px;
+          margin-left: -280px;
         }
 
         .gs-panel-head {
@@ -365,10 +365,10 @@ export default function StoreMapPage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
+          gap: 10px;
         }
         .gs-brand-logo {
-          height: 30px;
+          height: 34px;
           width: auto;
           flex: none;
           object-fit: contain;
@@ -378,7 +378,7 @@ export default function StoreMapPage() {
           position: absolute;
           top: 50%;
           transform: translateY(-50%);
-          left: calc(255px - 14px);
+          left: calc(280px - 14px);
           width: 28px;
           height: 76px;
           display: flex;
@@ -415,7 +415,7 @@ export default function StoreMapPage() {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
         }
         .gs-title {
-          font-size: 19px;
+          font-size: 20px;
           font-weight: 700;
           letter-spacing: 0.5px;
           margin: 0;
@@ -424,7 +424,7 @@ export default function StoreMapPage() {
           white-space: nowrap;
         }
         .gs-sub {
-          font-size: 8.5px;
+          font-size: 9px;
           color: rgba(255, 255, 255, 0.75);
           margin-top: 3px;
           line-height: 1.3;
@@ -433,7 +433,7 @@ export default function StoreMapPage() {
         .gs-stats {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 6px;
+          gap: 8px;
         }
         .gs-stat {
           position: relative;
@@ -483,7 +483,7 @@ export default function StoreMapPage() {
 
         .gs-filters {
           display: flex;
-          gap: 6px;
+          gap: 8px;
           padding: 12px 20px 0;
         }
         .gs-filter-btn {
