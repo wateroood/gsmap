@@ -1157,11 +1157,11 @@ export default function StoreMapPage() {
         .gs-nearest-pin {
           width: 36px;
           height: 36px;
-          background: #1e88e5;
+          background: #e53935;
           border: 3px solid #fff;
           border-radius: 50% 50% 50% 0;
           transform: rotate(-45deg);
-          box-shadow: 0 4px 16px rgba(30, 136, 229, 0.55), 0 2px 8px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 4px 16px rgba(229, 57, 53, 0.55), 0 2px 8px rgba(0, 0, 0, 0.3);
           position: relative;
         }
         .gs-nearest-pin::after {
