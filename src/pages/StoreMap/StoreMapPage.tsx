@@ -28,6 +28,18 @@ function getBrandPinClass(brand: BrandKey): string {
   return 'gs-gold';
 }
 
+// 球面距离（公里）
+function haversineKm(lng1: number, lat1: number, lng2: number, lat2: number): number {
+  const R = 6371;
+  const rad = Math.PI / 180;
+  const dLat = (lat2 - lat1) * rad;
+  const dLng = (lng2 - lng1) * rad;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
 export default function StoreMapPage() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -67,10 +79,10 @@ export default function StoreMapPage() {
   const tipSuffix = '家门店 · 点击列表可定位';
 
   // 构建图钉 HTML
-  const buildMarkerHtml = useCallback((s: IStore) => {
+  const buildMarkerHtml = useCallback((s: IStore, idx: number) => {
     const color = getBrandColor(s.brand);
     return `
-      <div class="gs-marker ${getBrandPinClass(s.brand)}">
+      <div class="gs-marker ${getBrandPinClass(s.brand)}" data-idx="${idx}">
         <div class="pin" style="--pin-color:${color}">
           <div class="pin-inner"></div>
         </div>
@@ -108,19 +120,13 @@ export default function StoreMapPage() {
 
   // 清除所有 marker 的 active 态
   const clearAllActive = useCallback(() => {
-    markersRef.current.forEach(m => {
-      const el = m.getContentElement?.() || m.getDom?.();
-      if (el) el.querySelector('.gs-marker')?.classList.remove('active');
-    });
+    document.querySelectorAll('.gs-marker.active').forEach(el => el.classList.remove('active'));
   }, []);
 
   // 高亮指定 marker
   const highlightMarker = useCallback((idx: number) => {
     clearAllActive();
-    const marker = markersRef.current[idx];
-    if (!marker) return;
-    const el = marker.getContentElement?.() || marker.getDom?.();
-    if (el) el.querySelector('.gs-marker')?.classList.add('active');
+    document.querySelector(`.gs-marker[data-idx="${idx}"]`)?.classList.add('active');
   }, [clearAllActive]);
 
   // 打开指定门店的弹窗
@@ -142,6 +148,85 @@ export default function StoreMapPage() {
     highlightMarker(idx);
     setActiveStoreIdx(idx);
   }, [buildPopupHtml, highlightMarker]);
+
+  // ===== 地址定位：匹配最近门店 =====
+  const locateRef = useRef<{ addrMarker: any; nearestIdx: number } | null>(null);
+  const locateInfoWindowRef = useRef<any>(null);
+
+  const clearLocate = useCallback(() => {
+    if (locateRef.current) {
+      locateRef.current.addrMarker?.setMap(null);
+      document.querySelector(`.gs-marker[data-idx="${locateRef.current.nearestIdx}"]`)?.classList.remove('locate-glow');
+      locateRef.current = null;
+    }
+    locateInfoWindowRef.current?.close();
+  }, []);
+
+  const locateAddress = useCallback((text: string) => {
+    const map = mapRef.current;
+    const AMap = window.AMap;
+    if (!map || !AMap) return;
+    AMap.plugin('AMap.Geocoder', () => {
+      const geocoder = new AMap.Geocoder({ city: '成都' });
+      geocoder.getLocation(text, (status: string, result: any) => {
+        if (status !== 'complete' || !result?.geocodes?.length) return;
+        const g = result.geocodes[0];
+        const pos = g.location;
+        if (!pos) return;
+        let nearestIdx = -1;
+        let minD = Infinity;
+        STORES.forEach((s, i) => {
+          if (s.brand !== 'star') return;
+          const d = haversineKm(pos.lng, pos.lat, s.lng, s.lat);
+          if (d < minD) { minD = d; nearestIdx = i; }
+        });
+        if (nearestIdx < 0) return;
+        clearLocate();
+        const addrMarker = new AMap.Marker({
+          position: pos,
+          content: '<div class="gs-locate-pin"></div>',
+          anchor: 'bottom-center',
+          zIndex: 300,
+        });
+        map.add(addrMarker);
+        document.querySelector(`.gs-marker[data-idx="${nearestIdx}"]`)?.classList.add('locate-glow');
+        map.setFitView([addrMarker, markersRef.current[nearestIdx]], false, [100, 100, 100, 100]);
+        if (!locateInfoWindowRef.current) {
+          locateInfoWindowRef.current = new AMap.InfoWindow({
+            isCustom: true,
+            offset: new AMap.Pixel(0, -24),
+          });
+        }
+        locateInfoWindowRef.current.setContent(`<div class="gs-locate-popup">最近的国色星洗门店距离${minD.toFixed(1)}公里</div>`);
+        locateInfoWindowRef.current.open(map, addrMarker.getPosition());
+        locateRef.current = { addrMarker, nearestIdx };
+      });
+    });
+  }, [clearLocate]);
+
+  // 地址定位防抖：输入本地无门店匹配时尝试地理编码
+  useEffect(() => {
+    if (!mapReady) return;
+    const text = keyword.trim();
+    if (!text) {
+      clearLocate();
+      return;
+    }
+    const kwLower = text.toLowerCase();
+    const localMatch = STORES.some(
+      st =>
+        st.name.toLowerCase().includes(kwLower) ||
+        st.short.toLowerCase().includes(kwLower) ||
+        st.addr.toLowerCase().includes(kwLower) ||
+        st.area.toLowerCase().includes(kwLower)
+    );
+    if (localMatch) {
+      clearLocate();
+      return;
+    }
+    const t = setTimeout(() => locateAddress(text), 600);
+    return () => clearTimeout(t);
+  }, [keyword, mapReady, locateAddress, clearLocate]);
 
   // 初始化地图
   useEffect(() => {
@@ -184,7 +269,7 @@ export default function StoreMapPage() {
       STORES.forEach((s, idx) => {
         const marker = new AMap.Marker({
           position: [s.lng, s.lat],
-          content: buildMarkerHtml(s),
+          content: buildMarkerHtml(s, idx),
           anchor: 'bottom-center',
           offset: new AMap.Pixel(0, 0),
           zIndex: 100,
@@ -206,11 +291,12 @@ export default function StoreMapPage() {
         map.setFitView(markers, false, [80, 80, 80, 80]);
       }
 
-      // 关闭弹窗时清除 active
+      // 关闭弹窗时清除 active 与地址定位
       map.on('click', () => {
         infoWindowRef.current?.close();
         clearAllActive();
         setActiveStoreIdx(null);
+        clearLocate();
       });
 
       mapRef.current = map;
@@ -933,6 +1019,51 @@ export default function StoreMapPage() {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
         }
 
+        /* ===== 地址定位 ===== */
+        .gs-locate-pin {
+          width: 20px;
+          height: 20px;
+          background: #1e88e5;
+          border: 3px solid #fff;
+          border-radius: 50% 50% 50% 0;
+          transform: rotate(-45deg);
+          box-shadow: 0 0 0 5px rgba(30, 136, 229, 0.22), 0 4px 14px rgba(0, 0, 0, 0.3);
+        }
+        .gs-locate-pin::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 7px;
+          height: 7px;
+          background: #fff;
+          border-radius: 50%;
+        }
+        .gs-marker.locate-glow .pin {
+          animation: gs-pin-glow-blue 1.2s ease-in-out infinite;
+        }
+        @keyframes gs-pin-glow-blue {
+          0%, 100% {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.95), 0 0 0 8px rgba(30, 136, 229, 0.5);
+          }
+          50% {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.95), 0 0 0 15px rgba(30, 136, 229, 0.12);
+          }
+        }
+        .gs-locate-popup {
+          background: #fff;
+          border-radius: 10px;
+          padding: 10px 14px;
+          font-size: 13px;
+          font-weight: 600;
+          color: #0d47a1;
+          white-space: nowrap;
+          box-shadow: 0 6px 20px rgba(13, 71, 161, 0.28);
+          border: 1px solid rgba(30, 136, 229, 0.25);
+          font-family: inherit;
+        }
+
         /* ===== InfoWindow 样式 ===== */
         .amap-info-content {
           padding: 0 !important;
@@ -1215,7 +1346,7 @@ export default function StoreMapPage() {
               type="text"
               value={keyword}
               onChange={e => setKeyword(e.target.value)}
-              placeholder="搜索门店名称/地址/商圈"
+              placeholder="搜索门店 / 输入地址定位最近门店"
               className="gs-search-field"
             />
             {keyword && (
