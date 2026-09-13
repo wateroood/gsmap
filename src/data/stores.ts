@@ -80,6 +80,7 @@ export const STORES: IStore[] = [
   { brand: 'star', name: '国色星洗（第七分店）', short: '第七分店', lat: 30.585704, lng: 104.055765, addr: '府城大道西段399号天府新谷9栋南侧商业1层2号', area: '石羊场', hours: '08:30-20:00', rate: 4.4 },
   { brand: 'star', name: '国色星洗（天府三街店）', short: '天府三街店', lat: 30.544575, lng: 104.034149, addr: '天府三街', area: '大源', hours: '08:30-20:00', rate: null },
   { brand: 'star', name: '国色星洗（九号公馆店）', short: '九号公馆店', lat: 30.580018, lng: 104.049975, addr: '九号公馆', area: '金融城', hours: '08:30-20:00', rate: null },
+  { brand: 'star', name: '国色星洗（大世界店）', short: '大世界店', lat: 30.616347, lng: 104.055934, addr: '大世界', area: '桐梓林', hours: '08:30-20:00', rate: null },
 
   // ---------- 国色1678 高端洗护（4 家） ----------
   { brand: 'lux', name: '国色1678（in99店）', short: 'in99店', lat: 30.584817, lng: 104.069461, addr: '天府大道北段1199号银泰中心in99-3层315-6A', area: '交子商圈', hours: '10:00-22:00', rate: 3.5 },
