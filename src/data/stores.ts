@@ -58,7 +58,7 @@ export const STORES: IStore[] = [
   { brand: 'star', name: '国色星洗（新都店）', short: '新都店', lat: 30.786464, lng: 104.156717, addr: '蜀龙大道南段128号', area: '三河', hours: '24小时', rate: 4.0 },
   { brand: 'star', name: '国色星洗(天府未来城店)', short: '天府未来城店', lat: 30.436919, lng: 104.092996, addr: '天府未来城', area: '天府新区', hours: '08:30-20:00', rate: null },
   { brand: 'star', name: '国色星洗(秦皇寺店)', short: '秦皇寺店', lat: 30.435169, lng: 104.056568, addr: '秦皇寺', area: '天府新区', hours: '08:30-20:00', rate: null },
-  { brand: 'star', name: '国色星洗(雅居乐店)', short: '雅居乐店', lat: 30.483604, lng: 104.139728, addr: '麓山大道2段19号附1号', area: '天府新区', hours: '08:30-20:00', rate: null },
+  { brand: 'star', name: '国色星洗(雅居乐店)', short: '雅居乐店', lat: 30.478354, lng: 104.136564, addr: '麓山大道2段19号附1号', area: '天府新区', hours: '08:30-20:00', rate: null },
   { brand: 'star', name: '国色星洗(华宇广场店)', short: '华宇广场店', lat: 30.623165, lng: 104.121737, addr: '上沙河铺街789号', area: '四川师范大学狮子山校区', hours: '08:30-20:00', rate: null },
   { brand: 'star', name: '国色星洗(南城都汇店)', short: '南城都汇店', lat: 30.593386, lng: 104.052652, addr: '和硕西街与成汉中路交叉口西南180米', area: '石羊场', hours: '08:30-20:00', rate: null },
   { brand: 'star', name: '国色星洗(麓湖天荟店)', short: '麓湖天荟店', lat: 30.449307, lng: 104.089415, addr: '麓湖南路东段1199号', area: '四川天府新区成都直管区', hours: '08:30-20:00', rate: null },
