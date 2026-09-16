@@ -66,7 +66,7 @@ export const STORES: IStore[] = [
   { brand: 'star', name: '国色星洗(广汇店)', short: '广汇店', lat: 30.441324, lng: 104.087120, addr: '隆祥街与双燕路东段交叉口北80米', area: '天府新区', hours: '08:30-20:00', rate: null },
   { brand: 'star', name: '国色星洗(浔岭店)', short: '浔岭店', lat: 30.456387, lng: 104.078658, addr: '赤岭路88号', area: '天府新区', hours: '08:30-20:00', rate: null },
   { brand: 'star', name: '国色星洗(五彩林堤店)', short: '五彩林堤店', lat: 30.462597, lng: 104.077660, addr: '天津路与汉州路交叉口西南280米', area: '四川天府新区成都直管区', hours: '08:30-20:00', rate: null },
-  { brand: 'star', name: '国色星洗(天府里店)', short: '天府里店', lat: 30.429862, lng: 104.091039, addr: '厦门路东段', area: '天府新区', hours: '08:30-20:00', rate: null },
+  { brand: 'star', name: '国色星洗（中海天府里店）', short: '中海天府里店', lat: 30.431135, lng: 104.092283, addr: '中海天府里', area: '天府新区', hours: '08:30-20:00', rate: null },
 
   // ---------- 国色净衣馆（已全部并入国色星洗） ----------
   { brand: 'star', name: '国色星洗（紫荆店）', short: '紫荆店', lat: 30.614282, lng: 104.049736, addr: '紫杉路步行街40号', area: '紫荆', hours: '08:30-20:00', rate: 4.0 },
