@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>国色星洗15周年庆 - 海报生成器</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: linear-gradient(135deg, #0f0c29 0%, #1a1a3e 50%, #24243e 100%);
+  min-height: 100vh;
+  color: #fff;
+}
+
+/* 顶部导航 */
+.top-bar {
+  background: rgba(0,0,0,0.4);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255,215,0,0.2);
+}
+.top-bar h1 {
+  font-size: 18px;
+  background: linear-gradient(135deg, #ffd700, #ffaa00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.copy-btn {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  color: #000;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.copy-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(255,215,0,0.4);
+}
+.copy-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 主布局 */
+.main {
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* 控制面板 */
+.controls {
+  width: 320px;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.05);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(255,215,0,0.15);
+}
+.control-group {
+  margin-bottom: 20px;
+}
+.control-group label {
+  display: block;
+  font-size: 13px;
+  color: #ffd700;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.control-group input,
+.control-group select {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,215,0,0.3);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.control-group input:focus,
+.control-group select:focus {
+  border-color: #ffd700;
+}
+.control-group select option {
+  background: #1a1a3e;
+  color: #fff;
+}
+
+/* 预览区 */
+.preview-area {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* 海报 */
+.poster {
+  width: 420px;
+  height: 750px;
+  background: linear-gradient(180deg, #1a0a3e 0%, #0d0525 50%, #1a0a3e 100%);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+/* 背景光效 */
+.poster::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(100, 60, 200, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 20% 80%, rgba(80, 40, 180, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(60, 100, 200, 0.2) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* 粒子装饰 */
+.particles {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: #ffd700;
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+/* 顶部标题区 */
+.poster-header {
+  position: relative;
+  padding: 30px 20px 20px;
+  text-align: center;
+}
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.badge-15 {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 900;
+  color: #8b4513;
+  border: 3px solid #fff;
+  box-shadow: 0 0 20px rgba(255,215,0,0.5);
+}
+.header-title {
+  font-size: 32px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #ffd700 0%, #ffaa00 50%, #ffd700 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px rgba(255,215,0,0.3);
+  letter-spacing: 2px;
+}
+.header-subtitle {
+  font-size: 16px;
+  color: #ff6b35;
+  font-weight: 700;
+  margin-top: 8px;
+  text-shadow: 0 0 10px rgba(255,107,53,0.5);
+}
+
+/* 能量条 */
+.energy-bar {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  text-align: right;
+}
+.energy-label {
+  font-size: 11px;
+  color: #aaa;
+  margin-bottom: 4px;
+}
+.energy-label b {
+  color: #ffd700;
+  font-size: 13px;
+}
+.energy-track {
+  width: 80px;
+  height: 8px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.energy-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #ffd700, #ffaa00);
+  border-radius: 4px;
+}
+
+/* 主卡片 */
+.main-card {
+  position: relative;
+  margin: 10px 20px;
+  background: linear-gradient(135deg, rgba(20,10,50,0.95), rgba(40,20,80,0.95));
+  border: 2px solid;
+  border-image: linear-gradient(135deg, #ffd700, #ff8c00, #ffd700) 1;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 0 30px rgba(255,215,0,0.2), inset 0 0 20px rgba(100,60,200,0.1);
+}
+
+/* 卡片行 */
+.card-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255,215,0,0.1);
+}
+.card-row:last-child {
+  border-bottom: none;
+}
+.row-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid #ffd700;
+  background: linear-gradient(135deg, rgba(100,60,200,0.5), rgba(60,30,120,0.5));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.row-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.row-icon .fallback-icon {
+  font-size: 24px;
+}
+.row-label {
+  font-size: 14px;
+  color: #aaa;
+  white-space: nowrap;
+}
+.row-label b {
+  color: #ff6b35;
+  margin: 0 4px;
+}
+.row-value {
+  flex: 1;
+  text-align: right;
+  font-size: 22px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #fff, #ffd700);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.row-value.amount {
+  font-size: 26px;
+}
+
+/* 左侧竖排文字 */
+.vertical-text {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  writing-mode: vertical-rl;
+  font-size: 13px;
+  color: #ffd700;
+  letter-spacing: 8px;
+  text-shadow: 0 0 10px rgba(255,215,0,0.5);
+}
+
+/* 右侧LV徽章 */
+.lv-badge {
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+  color: #8b4513;
+  border: 2px solid #fff;
+  box-shadow: 0 0 15px rgba(255,215,0,0.5);
+}
+
+/* 底部VICTORY */
+.poster-footer {
+  position: absolute;
+  bottom: 30px;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+.victory-text {
+  font-size: 42px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #ffd700 0%, #ff8c00 50%, #ffd700 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px rgba(255,215,0,0.5);
+  letter-spacing: 4px;
+}
+.victory-sub {
+  font-size: 14px;
+  color: #ffd700;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+/* 底部装饰 */
+.bottom-decor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(0deg, rgba(255,215,0,0.1), transparent);
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.8);
+  color: #ffd700;
+  padding: 16px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  z-index: 9999;
+  display: none;
+  border: 1px solid rgba(255,215,0,0.3);
+}
+.toast.show {
+  display: block;
+  animation: fadeInOut 2s ease;
+}
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* 响应式 */
+@media (max-width: 900px) {
+  .main {
+    flex-direction: column;
+  }
+  .controls {
+    width: 100%;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>国色星洗15周年庆 · 海报生成器</h1>
+  <button class="copy-btn" id="copyBtn" onclick="copyPoster()">一键复制海报</button>
+</div>
+
+<div class="main">
+  <!-- 控制面板 -->
+  <div class="controls">
+    <div class="control-group">
+      <label>选择战队</label>
+      <select id="teamSelect" onchange="updatePoster()">
+        <option value="">-- 请选择战队 --</option>
+        <option value="congrong">从容应队</option>
+        <option value="xingyao">星耀战队</option>
+        <option value="tiantian">天天向上战队</option>
+        <option value="dianfeng">巅峰战队</option>
+        <option value="chaoyue">超越战队</option>
+        <option value="toulang">头狼战队</option>
+        <option value="zhuxing">铸星战队</option>
+        <option value="yuyue">渝越战队</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>门店名称</label>
+      <input type="text" id="storeName" placeholder="如：东湖店" value="东湖店" oninput="updatePoster()">
+    </div>
+    <div class="control-group">
+      <label>伙伴名字</label>
+      <input type="text" id="partnerName" placeholder="如：王艳秋" value="王艳秋" oninput="updatePoster()">
+    </div>
+    <div class="control-group">
+      <label>成交金额（元）</label>
+      <input type="number" id="amount" placeholder="如：2500" value="2500" oninput="updatePoster()">
+    </div>
+  </div>
+
+  <!-- 预览区 -->
+  <div class="preview-area">
+    <div class="poster" id="poster">
+      <!-- 粒子 -->
+      <div class="particles" id="particles"></div>
+
+      <!-- 能量条 -->
+      <div class="energy-bar">
+        <div class="energy-label">能量值 <b>100%</b></div>
+        <div class="energy-track"><div class="energy-fill"></div></div>
+      </div>
+
+      <!-- 顶部标题 -->
+      <div class="poster-header">
+        <div class="header-badge">
+          <div class="badge-15">15</div>
+          <div class="header-title">国色星洗15周年庆</div>
+        </div>
+        <div class="header-subtitle">无限心动季，再创新胜利</div>
+      </div>
+
+      <!-- 主卡片 -->
+      <div class="main-card">
+        <div class="vertical-text">巅峰时刻 荣耀共赢</div>
+        <div class="lv-badge">LV.15</div>
+
+        <!-- 战队 -->
+        <div class="card-row">
+          <div class="row-icon" id="teamIcon">
+            <span class="fallback-icon">⭐</span>
+          </div>
+          <div class="row-label">战队 <b>>></b></div>
+          <div class="row-value" id="teamValue">星耀战队</div>
+        </div>
+
+        <!-- 门店 -->
+        <div class="card-row">
+          <div class="row-icon">
+            <span class="fallback-icon">🏪</span>
+          </div>
+          <div class="row-label">门店 <b>>></b></div>
+          <div class="row-value" id="storeValue">东湖店</div>
+        </div>
+
+        <!-- 伙伴 -->
+        <div class="card-row">
+          <div class="row-icon">
+            <span class="fallback-icon">👤</span>
+          </div>
+          <div class="row-label">伙伴 <b>>></b></div>
+          <div class="row-value" id="partnerValue">王艳秋</div>
+        </div>
+
+        <!-- 成交金额 -->
+        <div class="card-row">
+          <div class="row-icon">
+            <span class="fallback-icon">💰</span>
+          </div>
+          <div class="row-label">成交金额 <b>>></b></div>
+          <div class="row-value amount" id="amountValue">¥2500</div>
+        </div>
+      </div>
+
+      <!-- 底部 -->
+      <div class="poster-footer">
+        <div class="victory-text">VICTORY</div>
+        <div class="victory-sub">★ 胜利属于我们！★</div>
+      </div>
+
+      <div class="bottom-decor"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">已复制到剪贴板！</div>
+
+<script>
+// 战队队徽URL
+const TEAM_LOGOS = {
+  congrong: 'https://aka.doubaocdn.com/s/Soq4fmGtz2',
+  xingyao: 'https://aka.doubaocdn.com/s/EKKkz13bEH',
+  tiantian: 'https://aka.doubaocdn.com/s/YtiYp9PRAh',
+  dianfeng: 'https://aka.doubaocdn.com/s/fJkVeVFvSy',
+  chaoyue: 'https://aka.doubaocdn.com/s/ulTVzWwiQ6',
+  toulang: 'https://aka.doubaocdn.com/s/Cx2q2PT3Ai',
+  zhuxing: 'https://aka.doubaocdn.com/s/nV2WqN0Cn1',
+  yuyue: 'https://aka.doubaocdn.com/s/9hS8LYKgV6'
+};
+
+// 生成粒子
+function initParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top = Math.random() * 100 + '%';
+    p.style.opacity = Math.random() * 0.5 + 0.2;
+    p.style.transform = `scale(${Math.random() * 2 + 0.5})`;
+    container.appendChild(p);
+  }
+}
+
+// 更新海报
+function updatePoster() {
+  const team = document.getElementById('teamSelect').value;
+  const teamName = document.getElementById('teamSelect').options[document.getElementById('teamSelect').selectedIndex].text;
+  const store = document.getElementById('storeName').value || '东湖店';
+  const partner = document.getElementById('partnerName').value || '王艳秋';
+  const amount = document.getElementById('amount').value || '0';
+
+  document.getElementById('teamValue').textContent = team === '' ? '请选择战队' : teamName;
+  document.getElementById('storeValue').textContent = store;
+  document.getElementById('partnerValue').textContent = partner;
+  document.getElementById('amountValue').textContent = '¥' + Number(amount).toLocaleString();
+
+  // 更新队徽
+  const teamIcon = document.getElementById('teamIcon');
+  if (team && TEAM_LOGOS[team]) {
+    teamIcon.innerHTML = `<img src="${TEAM_LOGOS[team]}" alt="${teamName}" crossorigin="anonymous">`;
+  } else {
+    teamIcon.innerHTML = '<span class="fallback-icon">⭐</span>';
+  }
+}
+
+// 复制海报
+async function copyPoster() {
+  const btn = document.getElementById('copyBtn');
+  btn.disabled = true;
+  btn.textContent = '生成中...';
+
+  try {
+    const poster = document.getElementById('poster');
+    const canvas = await html2canvas(poster, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null
+    });
+
+    // 转为blob
+    canvas.toBlob(async (blob) => {
+      try {
+        // 尝试使用Clipboard API
+        if (navigator.clipboard && window.ClipboardItem) {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob })
+          ]);
+          showToast('已复制到剪贴板！');
+        } else {
+          // 降级：下载图片
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = '国色星洗15周年庆海报.png';
+          a.click();
+          URL.revokeObjectURL(url);
+          showToast('已下载海报图片！');
+        }
+      } catch (e) {
+        // 剪贴板失败，下载图片
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '国色星洗15周年庆海报.png';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('已下载海报图片！');
+      }
+    }, 'image/png');
+  } catch (e) {
+    alert('生成失败：' + e.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '一键复制海报';
+}
+
+// 显示toast
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// 初始化
+initParticles();
+updatePoster();
+</script>
+
+</body>
+</html>
