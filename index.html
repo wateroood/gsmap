@@ -11,7 +11,21 @@
   if(needsPolyfill){
     document.write('<script src="/gsmap/assets/polyfills.js"><\/script>');
   }
-})();</script><script>(function(g){
+})();</script><script>window.appId = "{{appId}}";
+    window.userId = "{{userId}}";
+    window.tenantId = "{{tenantId}}";
+    window.userName = "{{userName}}";
+    window.csrfToken = "{{csrfToken}}";
+    window.ENVIRONMENT = "{{environment}}";
+    window.__BASENAME__ = "{{basename}}";
+    const appInfo = {
+      name: "{{appName}}",
+      avatar: "{{{appAvatar}}}",
+      description: "{{appDescription}}",
+    };
+    if (appInfo.name) {
+      window._appInfo = appInfo;
+    }</script><script>(function(g){
   if(!window[g]){var q=[];window[g]=function(){q.push([].slice.call(arguments));};window[g].q=q;}
   window.__slardarErrBuf=window.__slardarErrBuf||[];
   var ref=document.referrer||'';
@@ -44,6 +58,50 @@
   window.addEventListener('unhandledrejection',function(e){
     if(e.reason!=null)_cap(e.reason instanceof Error?e.reason:new Error(String(e.reason)));
   });
-})('KSlardarWeb');</script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>国色星洗门店分布图</title><script type="text/javascript">window._AMapSecurityConfig = {
+})('KSlardarWeb');</script><script>const slardarScript = document.createElement('script');
+    slardarScript.src = 'https://lf3-short.ibytedapm.com/slardar/fe/sdk-web/browser.cn.js?bid=apaas_miaoda&globalName=KSlardarWeb';
+    slardarScript.crossOrigin = 'anonymous';
+    slardarScript.onload = function() {
+      if (window.KSlardarWeb) {
+        window.KSlardarWeb('context.merge', {
+          tenantId: window.tenantId ?? '',
+          appId: window.appId ?? '',
+          stack_version: "0.1.0",
+        });
+        window.KSlardarWeb('init', {
+          bid: 'apaas_miaoda',
+          env: window.ENVIRONMENT || 'online',
+          userId: window.userId ?? '',
+        });
+        window.KSlardarWeb('start');
+        // Flush errors captured before the SDK finished loading
+        var buf = window.__slardarErrBuf || [];
+        window.__slardarErrBuf = [];
+        buf.forEach(function(err) {
+          window.KSlardarWeb('captureException', err instanceof Error ? err : new Error(String(err)), { source: 'pre-sdk-error', referrer: document.referrer || '' });
+        });
+      }
+    };
+    slardarScript.onerror = function() {
+      console.warn('Failed to load Slardar script');
+    };
+    document.head.appendChild(slardarScript);</script><script src="https://sf3-scmcdn-cn.feishucdn.com/obj/unpkg/byted/performance/0.2.3/dist/performance.iife.js" data-app-name="builderV3" crossorigin="anonymous" defer="defer"></script><script>(function (win, export_obj) {
+    win['LogAnalyticsObject'] = export_obj;
+    if (!win[export_obj]) {
+      function _collect() { _collect.q.push(arguments); }
+      _collect.q = _collect.q || [];
+      win[export_obj] = _collect;
+    }
+    win[export_obj].l = +new Date();
+  })(window, 'collectEvent');
+
+  const teaScript = document.createElement('script');
+  teaScript.src = 'https://lf3-cdn-tos.bytescm.com/obj/static/log-sdk/collect/5.1/collect.js';
+  teaScript.crossOrigin = 'anonymous';
+  teaScript.async = true;
+  teaScript.onerror = function() {
+    console.warn('Failed to load Tea script');
+  };
+  document.head.appendChild(teaScript);</script><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{appName}}</title><script type="text/javascript">window._AMapSecurityConfig = {
         securityJsCode: '517b57e1e174f02b442fe4b6d01b0cca',
-      };</script><script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=23970bcb66706c7b91d50d0d7b998636"></script><script type="module" crossorigin src="/gsmap/assets/index-CzOwbIQt.js"></script><link rel="stylesheet" crossorigin href="/gsmap/assets/index-Dd9q4b8_.css"><meta property="og:title" content="国色星洗门店分布图"><meta property="og:description" content="国色星洗成都门店分布地图"><meta property="og:image" content="/gsmap/favicon.png"><meta name="description" content="国色星洗成都门店分布地图"><link rel="icon" href="/gsmap/favicon.png"></head><body><div id="root"></div></body></html>
+      };</script><script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=23970bcb66706c7b91d50d0d7b998636"></script><script type="module" crossorigin src="/gsmap/assets/index-CqrMHe12.js"></script><link rel="stylesheet" crossorigin href="/gsmap/assets/index-Dd9q4b8_.css"><meta property="og:title" content="{{appName}}"><meta property="og:description" content="{{appDescription}}"><meta property="og:image" content="{{appAvatar}}"><meta name="description" content="{{appDescription}}"><link rel="icon" href="{{appAvatar}}"></head><body><div id="root"></div></body></html>
