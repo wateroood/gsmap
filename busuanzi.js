@@ -1,0 +1,1 @@
+(()=>{if(window.busuanziRequestSent)return;window.busuanziRequestSent=true;fetch('https://cdn.busuanzi.cc/api.php',{method:'POST',body:JSON.stringify({url:location.origin+location.pathname,referrer:document.referrer})}).then(r=>r.json()).then(r=>{for(const k in r)document.querySelectorAll('#'+k).forEach(e=>e.innerText=r[k])}).catch(e=>console.error(e))})()
